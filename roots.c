@@ -169,6 +169,12 @@ void load_volume_table() {
 }
 
 Volume* volume_for_path(const char* path) {
+
+    // WORKAROUND: compatibility with rommanager
+    if(strncmp(path,"SDCARD:",7)==0) {
+	strncpy (path,"/sdcard",7);
+    }
+
     int i;
     for (i = 0; i < num_volumes; ++i) {
         Volume* v = device_volumes+i;
