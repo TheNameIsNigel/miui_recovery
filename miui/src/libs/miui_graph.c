@@ -197,6 +197,15 @@ int ag_changcolor(char ch1, char ch2, char ch3, char ch4)
     return 0;
 }
 
+void ag_fb_blank(int blank)
+{
+    int ret;
+
+    ret = ioctl(ag_fb, FBIOBLANK, blank ? FB_BLANK_POWERDOWN : FB_BLANK_UNBLANK);
+    if (ret < 0)
+        perror("ioctl(): blank");
+}
+
 /*********************************[ FUNCTIONS ]********************************/
 //-- INITIALIZING AMARULLZ GRAPHIC
 byte ag_init(){
@@ -208,9 +217,11 @@ byte ag_init(){
   
   if (ag_fb>0){
     //-- Init Info from IO
-    ioctl(ag_fb, FBIOGET_FSCREENINFO, &ag_fbf);
-    ioctl(ag_fb, FBIOGET_VSCREENINFO, &ag_fbv);
-    
+    if(ioctl(ag_fb, FBIOGET_VSCREENINFO, &ag_fbv) < 0) {
+        perror("ioctl: FBIOGET_VSCREENINFO on fb0 failed");
+	return -1;
+    }
+
     //-- Init 32 Buffer
     ag_canvas(&ag_c,ag_fbv.xres,ag_fbv.yres);
     ag_dp = floor( min(ag_fbv.xres,ag_fbv.yres) / 160);
@@ -237,8 +248,17 @@ byte ag_init(){
           close(ag_fb);
           return -1;
       }
+      if(ioctl(ag_fb, FBIOGET_FSCREENINFO, &ag_fbf) < 0) {
+	  perror("ioctl: FBIOGET_FSCREENINFO on fb0 failed");
+	  return -1;
+      }
       ag_32   = 0;
       ag_fbuf = (word*) mmap(0,ag_fbf.smem_len,PROT_READ|PROT_WRITE,MAP_SHARED,ag_fb,0);
+      if (ag_fbuf == MAP_FAILED) {
+          perror("failed to mmap framebuffer");
+          close(ag_fb);
+          return -1;
+      }
       ag_b    = (word*) malloc(ag_fbsz);
       ag_bz   = (word*) malloc(ag_fbsz);
       
@@ -303,6 +323,9 @@ byte ag_init(){
       }
     }
     
+    ag_fb_blank(1);
+    ag_fb_blank(0);
+
     //-- Refresh Draw Lock Thread
     ag_isrun = 1;
     pthread_create(&ag_pthread, NULL, ag_thread, NULL);
@@ -310,6 +333,7 @@ byte ag_init(){
     //-- Init FreeType
     LOGS("Opening Freetype\n");
     aft_open();
+
     
     return 1;
   }
