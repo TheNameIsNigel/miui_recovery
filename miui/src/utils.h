@@ -30,16 +30,16 @@ typedef int u32;
 //
 // MIUI Main Configurations
 //
-#define MIUI_NAME        "MIUI Recovery by syhost"
+#define MIUI_NAME        "Cannibal Open Touch NG"
 //rom_version
-#define MIUI_VERSION     "2.04"
+#define MIUI_VERSION     "1.0"
 //rom date
-#define MIUI_BUILD       "2012-12-02"
+#define MIUI_BUILD       "2013-04-14"
 #define MIUI_BUILD_CN    "Weekend"
 #define MIUI_BUILD_L     "Dennis"
-#define MIUI_BUILD_A     "<yanhao@xiaomi.com>"
-#define MIUI_BUILD_URL   "http://www.micode.net/"
-#define MIUI_COPY        "(c) 2012 by xiaomi MIUI developers"
+#define MIUI_BUILD_A     "<drew@projectopencannibal.net>"
+#define MIUI_BUILD_URL   "http://www.projectopencannibal.net/"
+#define MIUI_COPY        "(c) 2013 Project Open Cannibal"
 
 //-- Temporary Dir - Move from /tmp/miui-data to /tmp/miui symlink to /tmp/miui-data for backward compatibility
 #define MIUI_SYSTMP      "/tmp"

@@ -2147,7 +2147,7 @@ STATUS miui_ui_start()
     }
     ag_canvas(&miui_win_bg, agw(), agh());
     ag_canvas(&miui_bg, agw(), agh());
-    miui_theme("miui4");
+    miui_theme("holo");
     ag_loadsmallfont("fonts/small", 0, NULL);
     ag_loadbigfont("fonts/big", 0, NULL);
     alang_release();
