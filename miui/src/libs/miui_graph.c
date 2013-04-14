@@ -209,7 +209,7 @@ void ag_fb_blank(int blank)
 /*********************************[ FUNCTIONS ]********************************/
 //-- INITIALIZING AMARULLZ GRAPHIC
 byte ag_init(){
-  miui_debug("function ag_init entry\n");
+  printf("function ag_init entry\n");
   if (ag_fb>0) return 0;
   
   //-- Open Framebuffer
@@ -217,11 +217,9 @@ byte ag_init(){
   
   if (ag_fb>0){
     //-- Init Info from IO
-    if(ioctl(ag_fb, FBIOGET_VSCREENINFO, &ag_fbv) < 0) {
-        perror("ioctl: FBIOGET_VSCREENINFO on fb0 failed");
-	return -1;
-    }
-
+    ioctl(ag_fb, FBIOGET_FSCREENINFO, &ag_fbf);
+    ioctl(ag_fb, FBIOGET_VSCREENINFO, &ag_fbv);
+    
     //-- Init 32 Buffer
     ag_canvas(&ag_c,ag_fbv.xres,ag_fbv.yres);
     ag_dp = floor( min(ag_fbv.xres,ag_fbv.yres) / 160);
@@ -231,7 +229,7 @@ byte ag_init(){
     ag_fbsz  = (ag_fbv.xres * ag_fbv.yres * ((agclp==3)?4:agclp));
     
     //-- Init Frame Buffer
-    miui_debug("ag_fbv.bits_per_pixel = %d\n", ag_fbv.bits_per_pixel);
+    printf("ag_fbv.bits_per_pixel = %d\n", ag_fbv.bits_per_pixel);
     if (ag_fbv.bits_per_pixel==16){
      /*RGB565*/
       ag_fbv.red.offset        = 11;
@@ -244,21 +242,12 @@ byte ag_init(){
       ag_fbv.transp.length     = 0;
       if (ioctl(ag_fb, FBIOPUT_VSCREENINFO, &ag_fbv) < 0)
       {
-          perror("failed to put fb0 info");
+          printf("failed to put fb0 info");
           close(ag_fb);
           return -1;
-      }
-      if(ioctl(ag_fb, FBIOGET_FSCREENINFO, &ag_fbf) < 0) {
-	  perror("ioctl: FBIOGET_FSCREENINFO on fb0 failed");
-	  return -1;
       }
       ag_32   = 0;
       ag_fbuf = (word*) mmap(0,ag_fbf.smem_len,PROT_READ|PROT_WRITE,MAP_SHARED,ag_fb,0);
-      if (ag_fbuf == MAP_FAILED) {
-          perror("failed to mmap framebuffer");
-          close(ag_fb);
-          return -1;
-      }
       ag_b    = (word*) malloc(ag_fbsz);
       ag_bz   = (word*) malloc(ag_fbsz);
       
@@ -322,22 +311,18 @@ byte ag_init(){
         }
       }
     }
-    
-    ag_fb_blank(1);
-    ag_fb_blank(0);
 
     //-- Refresh Draw Lock Thread
     ag_isrun = 1;
     pthread_create(&ag_pthread, NULL, ag_thread, NULL);
     
     //-- Init FreeType
-    LOGS("Opening Freetype\n");
+    printf("Opening Freetype\n");
     aft_open();
-
     
     return 1;
   }
-  miui_debug("open framebuffer failed\n");
+  printf("open framebuffer failed\n");
   return 0;
 }
 void ag_close_thread(){

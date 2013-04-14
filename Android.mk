@@ -12,6 +12,7 @@ LOCAL_SRC_FILES := \
     roots.c \
     firmware.c \
     nandroid.c \
+    ../../system/core/toolbox/reboot.c \
     verifier.c \
     recovery.c
 
@@ -33,7 +34,8 @@ LOCAL_STATIC_LIBRARIES :=
 ifeq ($(TARGET_USERIMAGES_USE_EXT4), true)
 LOCAL_CFLAGS += -DUSE_EXT4
 LOCAL_C_INCLUDES += system/extras/ext4_utils
-LOCAL_STATIC_LIBRARIES += libext4_utils_static libz libsparse_static
+LOCAL_STATIC_LIBRARIES += libext4_utils libz 
+#libsparse
 endif
 
 # This binary is in the recovery ramdisk, which is otherwise a copy of root.
@@ -41,15 +43,18 @@ endif
 # a (redundant) copy of the binary in /system/bin for user builds.
 # TODO: Build the ramdisk image in a more principled way.
 
-LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_TAGS := eng
 
 #LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
 #LOCAL_LDLIBS += $(LOCAL_PATH)/lib
 
-LOCAL_STATIC_LIBRARIES += libext4_utils_static libz libsparse_static
-LOCAL_STATIC_LIBRARIES += libminzip libunz libmtdutils libmincrypt
+
+LOCAL_STATIC_LIBRARIES += libext4_utils libz
+#libsparse
+LOCAL_STATIC_LIBRARIES += libminzip libunz libmincrypt
 #add static libraries
-LOCAL_STATIC_LIBRARIES += libedify libcrecovery libflashutils libmmcutils libbmlutils
+
+LOCAL_STATIC_LIBRARIES += libedify libcrecovery libflashutils libmmcutils libbmlutils libmtdutils
 LOCAL_STATIC_LIBRARIES += libmkyaffs2image libunyaffs liberase_image libdump_image libflash_image
 LOCAL_STATIC_LIBRARIES += libmiui libcutils
 LOCAL_STATIC_LIBRARIES += libstdc++ libc libm
