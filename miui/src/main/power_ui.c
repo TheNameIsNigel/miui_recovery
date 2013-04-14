@@ -7,8 +7,6 @@
 #define POWER_RECOVERY               1
 #define POWER_BOOTLOADER             2
 #define POWER_POWEROFF               3
-#define POWER_REBOOT_SYSTEM0         4
-#define POWER_REBOOT_SYSTEM1         5
 
 static int setbootmode(char* bootmode) {
    // open misc-partition
@@ -36,14 +34,6 @@ static STATUS power_child_show(menuUnit *p)
     if (RET_YES == miui_confirm(3, p->name, p->desc, p->icon)) {
         switch(p->result) {
             case POWER_REBOOT:
-                miuiIntent_send(INTENT_REBOOT, 1, "reboot");
-                break;
-            case POWER_REBOOT_SYSTEM0:
-                setbootmode("boot-system0");
-                miuiIntent_send(INTENT_REBOOT, 1, "reboot");
-                break;
-            case POWER_REBOOT_SYSTEM1:
-                setbootmode("boot-system1");
                 miuiIntent_send(INTENT_REBOOT, 1, "reboot");
                 break;
             case POWER_BOOTLOADER:
@@ -91,26 +81,6 @@ struct _menuUnit * power_ui_init()
     menuUnit_set_title(temp, "<~reboot.null.title>");
     menuUnit_set_icon(temp, "@reboot");
     temp->result = POWER_REBOOT;
-    temp->show = &power_child_show;
-    assert_if_fail(menuNode_add(p, temp) == RET_OK);
-
-    //reboot to system0
-    temp = common_ui_init();
-    return_null_if_fail(temp != NULL);
-    strncpy(temp->name, "<~reboot.system0>", MENU_LEN);
-    menuUnit_set_title(temp, "<~reboot.system0.title>");
-    menuUnit_set_icon(temp, "@reboot");
-    temp->result = POWER_REBOOT_SYSTEM0;
-    temp->show = &power_child_show;
-    assert_if_fail(menuNode_add(p, temp) == RET_OK);
-
-    //reboot to system1
-    temp = common_ui_init();
-    return_null_if_fail(temp != NULL);
-    strncpy(temp->name, "<~reboot.system1>", MENU_LEN);
-    menuUnit_set_title(temp, "<~reboot.system1.title>");
-    menuUnit_set_icon(temp, "@reboot");
-    temp->result = POWER_REBOOT_SYSTEM1;
     temp->show = &power_child_show;
     assert_if_fail(menuNode_add(p, temp) == RET_OK);
 
