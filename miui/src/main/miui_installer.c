@@ -28,6 +28,11 @@
 #include "../miui.h"
 #include "../../../miui_intent.h"
 
+#define POWER_REBOOT                 0
+#define POWER_RECOVERY               1
+#define POWER_BOOTLOADER             2
+#define POWER_POWEROFF               3
+
 static byte      ai_run              = 0;
 static int       ai_progani_pos      = 0;
 static float     ai_progress_pos     = 0;
@@ -127,15 +132,13 @@ done:
   if (buffer!=NULL) free(buffer);
 }
 
-void ai_dump_logs(){
-  char dumpname[256];
+void ai_reboot_device(){
   char msgtext[256];
-  snprintf(dumpname,255,"%s/install.log",RECOVERY_PATH);
-  snprintf(msgtext,255,"Install Log will be saved into:\n\n<#060>%s</#>\n\nAre you sure you want to save it?",dumpname);
+  snprintf(msgtext,255,"Device will be rebooted.\n\nAre you sure you want to reboot?");
   
   byte res = aw_confirm(
     ai_win,
-    "Save Install Log",
+    "Reboot System",
     msgtext,
     "@alert",
     NULL,
@@ -143,15 +146,7 @@ void ai_dump_logs(){
   );
   
   if (res){
-    ai_actionsavelog(dumpname);
-    //rename(MIUI_INSTALL_LOG,dumpname);
-    aw_alert(
-      ai_win,
-      "Save Install Log",
-      "Install Logs has been saved...",
-      "@info",
-      NULL
-    );
+    miuiIntent_send(INTENT_REBOOT, 1, "reboot");
   }
   
 }
@@ -462,7 +457,7 @@ int miui_start_install(
       // Show Dump Button
       acbutton(
         hWin,
-        pad,py,(cw/2)-(agdp()*2),ph,"Save Logs",0,
+        pad,py,(cw/2)-(agdp()*2),ph,"Reboot System",0,
         8
       );
       
@@ -474,7 +469,7 @@ int miui_start_install(
           switch(aw_gm(msg))
           {
           case 8:
-              ai_dump_logs();
+              ai_reboot_device();
               break;
           case 6:
               ondispatch = 0;
