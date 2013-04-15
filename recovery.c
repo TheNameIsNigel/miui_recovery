@@ -547,6 +547,35 @@ print_property(const char *key, const char *name, void *cookie) {
 
 int
 main(int argc, char **argv) {
+	if (strcmp(basename(argv[0]), "recovery") != 0)
+	{
+        if (strstr(argv[0], "flash_image") != NULL)
+            return flash_image_main(argc, argv);
+        if (strstr(argv[0], "dump_image") != NULL)
+            return dump_image_main(argc, argv);
+        if (strstr(argv[0], "erase_image") != NULL)
+            return erase_image_main(argc, argv);
+        if (strstr(argv[0], "mkyaffs2image") != NULL)
+            return mkyaffs2image_main(argc, argv);
+        if (strstr(argv[0], "unyaffs") != NULL)
+            return unyaffs_main(argc, argv);
+        if (strstr(argv[0], "nandroid"))
+            return nandroid_main(argc, argv);
+        if (strstr(argv[0], "reboot"))
+            return reboot_main(argc, argv);
+#ifdef BOARD_RECOVERY_HANDLES_MOUNT
+        if (strstr(argv[0], "mount") && argc == 2 && !strstr(argv[0], "umount"))
+        {
+            load_volume_table();
+            return ensure_path_mounted(argv[1]);
+        }
+#endif
+        if (strstr(argv[0], "poweroff")){
+            return reboot_main(argc, argv);
+        }
+    }
+	__system("/sbin/postrecoveryboot.sh");
+
     time_t start = time(NULL);
 
     // If these fail, there's not really anywhere to complain...
