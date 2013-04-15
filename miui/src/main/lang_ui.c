@@ -3,10 +3,6 @@
 static STATUS lang_menu_show(menuUnit *p)
 {
     return_val_if_fail(p != NULL, RET_FAIL);
-    miui_font( "0", "ttf/DroidSans.ttf;ttf/DroidSansFallback.ttf;", "12" );
-    miui_font( "1", "ttf/DroidSans.ttf;ttf/DroidSansFallback.ttf;", "18" );
-    miui_loadlang("langs/en.lang");
-
     miui_loadlang("langs/en.lang");
     miui_font( "0", "ttf/DroidSans.ttf", "12" );
     miui_font( "1", "ttf/DroidSans.ttf", "18" );
