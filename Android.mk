@@ -34,10 +34,9 @@ LOCAL_STATIC_LIBRARIES :=
 ifeq ($(TARGET_USERIMAGES_USE_EXT4), true)
 LOCAL_CFLAGS += -DUSE_EXT4
 LOCAL_C_INCLUDES += system/extras/ext4_utils
-LOCAL_STATIC_LIBRARIES += libext4_utils libz
+LOCAL_STATIC_LIBRARIES += libext4_utils libz 
+#libsparse
 endif
-
-LOCAL_STATIC_LIBRARIES += libcannibal_e2fsck libcannibal_tune2fs libcannibal_mke2fs libcannibal_ext2fs libcannibal_ext2_blkid libcannibal_ext2_uuid libcannibal_ext2_profile libcannibal_ext2_com_err libcannibal_ext2_e2p
 
 # This binary is in the recovery ramdisk, which is otherwise a copy of root.
 # It gets copied there in config/Makefile.  LOCAL_MODULE_TAGS suppresses
@@ -51,7 +50,7 @@ LOCAL_MODULE_TAGS := eng
 
 
 LOCAL_STATIC_LIBRARIES += libext4_utils libz
-LOCAL_STATIC_LIBRARIES += libcannibal_e2fsck libcannibal_tune2fs libcannibal_mke2fs libcannibal_ext2fs libcannibal_ext2_blkid libcannibal_ext2_uuid libcannibal_ext2_profile libcannibal_ext2_com_err libcannibal_ext2_e2p
+#libsparse
 LOCAL_STATIC_LIBRARIES += libminzip libunz libmincrypt
 #add static libraries
 
@@ -66,24 +65,13 @@ LOCAL_C_INCLUDES += system/extras/ext4_utils
 
 include $(BUILD_EXECUTABLE)
 
-RECOVERY_LINKS := edify busybox flash_image dump_image mkyaffs2image unyaffs erase_image nandroid reboot volume setprop minizip
 
 LOCAL_PREBUILT_PATH := $(LOCAL_PATH)/prebuilt_lib
-# nc is provided by external/netcat
-RECOVERY_SYMLINKS := $(addprefix $(TARGET_RECOVERY_ROOT_OUT)/sbin/,$(RECOVERY_LINKS))
-$(RECOVERY_SYMLINKS): RECOVERY_BINARY := $(LOCAL_MODULE)
-$(RECOVERY_SYMLINKS): $(LOCAL_INSTALLED_MODULE)
-	@echo "Symlink: $@ -> $(RECOVERY_BINARY)"
-	@mkdir -p $(dir $@)
-	@rm -rf $@
-	$(hide) ln -sf $(RECOVERY_BINARY) $@
-
-ALL_DEFAULT_INSTALLED_MODULES += $(RECOVERY_SYMLINKS)
-
+BUSYBOX_PATH := $(LOCAL_PREBUILT_PATH)/busybox
 # Now let's do recovery symlinks
-BUSYBOX_LINKS := $(shell cat external/busybox/busybox-minimal.links)
+BUSYBOX_LINKS := $(shell cat $(BUSYBOX_PATH)/busybox-minimal.links)
 exclude := tune2fs mke2fs
-RECOVERY_BUSYBOX_SYMLINKS := $(addprefix $(TARGET_RECOVERY_ROOT_OUT)/sbin/,$(filter-out $(exclude),$(notdir $(BUSYBOX_LINKS))))
+RECOVERY_BUSYBOX_SYMLINKS := $(addprefix $(TARGET_ROOT_OUT)/sbin/,$(filter-out $(exclude),$(notdir $(BUSYBOX_LINKS))))
 $(RECOVERY_BUSYBOX_SYMLINKS): BUSYBOX_BINARY := busybox
 $(RECOVERY_BUSYBOX_SYMLINKS): $(LOCAL_INSTALLED_MODULE)
 	@echo "Symlink: $@ -> $(BUSYBOX_BINARY)"
@@ -91,10 +79,11 @@ $(RECOVERY_BUSYBOX_SYMLINKS): $(LOCAL_INSTALLED_MODULE)
 	@rm -rf $@
 	$(hide) ln -sf $(BUSYBOX_BINARY) $@
 
-ALL_DEFAULT_INSTALLED_MODULES += $(RECOVERY_BUSYBOX_SYMLINKS) 
+ALL_DEFAULT_INSTALLED_MODULES += $(RECOVERY_BUSYBOX_SYMLINKS)
 
 LOCAL_PREBUILT_EXEC := $(TARGET_ROOT_OUT)/bin
 $(LOCAL_PREBUILT_EXEC):
+	cp $(BUSYBOX_PATH)/busybox $(TARGET_ROOT_OUT)/sbin/ -f
 	cp $(LOCAL_PREBUILT_PATH)/adbd $(TARGET_ROOT_OUT)/sbin/ -f
 
 ALL_DEFAULT_INSTALLED_MODULES += $(LOCAL_PREBUILT_EXEC)
