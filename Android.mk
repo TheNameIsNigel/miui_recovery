@@ -65,11 +65,22 @@ LOCAL_C_INCLUDES += system/extras/ext4_utils
 
 include $(BUILD_EXECUTABLE)
 
+RECOVERY_LINKS := edify flash_image dump_image mkyaffs2image unyaffs erase_image nandroid reboot volume setprop minizip
 
-LOCAL_PREBUILT_PATH := $(LOCAL_PATH)/prebuilt_lib
-BUSYBOX_PATH := $(LOCAL_PREBUILT_PATH)/busybox
+# nc is provided by external/netcat
+RECOVERY_SYMLINKS := $(addprefix $(TARGET_RECOVERY_ROOT_OUT)/sbin/,$(RECOVERY_LINKS))
+$(RECOVERY_SYMLINKS): RECOVERY_BINARY := $(LOCAL_MODULE)
+$(RECOVERY_SYMLINKS): $(LOCAL_INSTALLED_MODULE)
+	@echo "Symlink: $@ -> $(RECOVERY_BINARY)"
+	@mkdir -p $(dir $@)
+	@rm -rf $@
+	$(hide) ln -sf $(RECOVERY_BINARY) $@
+
+ALL_DEFAULT_INSTALLED_MODULES += $(RECOVERY_SYMLINKS)
+
+BUSYBOX_PATH := $(LOCAL_PATH)/busybox
 # Now let's do recovery symlinks
-BUSYBOX_LINKS := $(shell cat $(BUSYBOX_PATH)/busybox-minimal.links)
+BUSYBOX_LINKS := $(shell cat $(LOCAL_PATH)/busybox/busybox-minimal.links) 
 exclude := tune2fs mke2fs
 RECOVERY_BUSYBOX_SYMLINKS := $(addprefix $(TARGET_ROOT_OUT)/sbin/,$(filter-out $(exclude),$(notdir $(BUSYBOX_LINKS))))
 $(RECOVERY_BUSYBOX_SYMLINKS): BUSYBOX_BINARY := busybox
@@ -81,12 +92,12 @@ $(RECOVERY_BUSYBOX_SYMLINKS): $(LOCAL_INSTALLED_MODULE)
 
 ALL_DEFAULT_INSTALLED_MODULES += $(RECOVERY_BUSYBOX_SYMLINKS)
 
-LOCAL_PREBUILT_EXEC := $(TARGET_ROOT_OUT)/bin
-$(LOCAL_PREBUILT_EXEC):
-	cp $(BUSYBOX_PATH)/busybox $(TARGET_ROOT_OUT)/sbin/ -f
-	cp $(LOCAL_PREBUILT_PATH)/adbd $(TARGET_ROOT_OUT)/sbin/ -f
+RECOVERY_BUSYBOX := $(TARGET_ROOT_OUT)/bin/busybox
+$(RECOVERY_BUSYBOX): 
+	@cp $(BUSYBOX_PATH)/busybox $(TARGET_ROOT_OUT)/sbin/ -f
+	#@cp $(BUSYBOX_PATH)/adbd $(TARGET_ROOT_OUT)/sbin/ 
 
-ALL_DEFAULT_INSTALLED_MODULES += $(LOCAL_PREBUILT_EXEC)
+ALL_DEFAULT_INSTALLED_MODULES += $(RECOVERY_BUSYBOX) 
 
 include $(CLEAR_VARS)
 
