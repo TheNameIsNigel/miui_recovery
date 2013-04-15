@@ -110,8 +110,8 @@ STATUS main_ui_init()
     tree_init();
 
 
-    miui_font( "0", "ttf/DroidSans.ttf;ttf/DroidSansFallback.ttf;", "12" );
-    miui_font( "1", "ttf/DroidSans.ttf;ttf/DroidSansFallback.ttf;", "18" );
+    miui_font( "0", "ttf/DroidSans.ttf;", "12" );
+    miui_font( "1", "ttf/DroidSans.ttf;", "18" );
     return RET_OK;
 }
 STATUS main_ui_show()

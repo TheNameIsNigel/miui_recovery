@@ -122,6 +122,48 @@ static const char *SIDELOAD_TEMP_DIR = "/tmp/sideload";
 static const int MAX_ARG_LENGTH = 4096;
 static const int MAX_ARGS = 100;
 
+void write_fstab_root(char *path, FILE *file)
+{
+    Volume *vol = volume_for_path(path);
+    if (vol == NULL) {
+        LOGW("Unable to get recovery.fstab info for %s during fstab generation!\n", path);
+        return;
+    }
+    char device[200];
+    if (vol->device[0] != '/')
+        get_partition_device(vol->device, device);
+    else
+        strcpy(device, vol->device);
+
+    fprintf(file, "%s ", device);
+    fprintf(file, "%s ", path);
+    // special case rfs cause auto will mount it as vfat on samsung.
+    fprintf(file, "%s rw\n", vol->fs_type2 != NULL && strcmp(vol->fs_type, "rfs") != 0 ? "auto" : vol->fs_type);
+}
+
+void create_fstab()
+{
+    struct stat info;
+    __system("touch /etc/mtab");
+    FILE *file = fopen("/etc/fstab", "w");
+    if (file == NULL) {
+        LOGW("Unable to create /etc/fstab!\n");
+        return;
+    }
+    Volume *vol = volume_for_path("/boot");
+    if (NULL != vol && strcmp(vol->fs_type, "mtd") != 0 && strcmp(vol->fs_type, "emmc") != 0 && strcmp(vol->fs_type, "bml") != 0)
+    write_fstab_root("/boot", file);
+    write_fstab_root("/cache", file);
+    write_fstab_root("/data", file);
+    write_fstab_root("/datadata", file);
+    write_fstab_root("/emmc", file);
+    write_fstab_root("/system", file);
+    write_fstab_root("/sdcard", file);
+    write_fstab_root("/sd-ext", file);
+    fclose(file);
+    LOGI("Completed outputting fstab.\n");
+}
+
 // open a given path, mounting partitions as necessary
 FILE*
 fopen_path(const char *path, const char *mode) {
@@ -608,7 +650,7 @@ main(int argc, char **argv) {
     struct bootloader_message boot;
     memset(&boot, 0, sizeof(boot));
     set_bootloader_message(&boot);
-
+	create_fstab();
     int previous_runs = 0;
     const char *send_intent = NULL;
     const char *update_package = NULL;
