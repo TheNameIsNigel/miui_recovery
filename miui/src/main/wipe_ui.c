@@ -97,6 +97,12 @@ struct _menuUnit* wipe_ui_init()
     return_null_if_fail(menuUnit_set_name(temp, "<~wipe.factory.name>") == RET_OK);
     return_null_if_fail(menuUnit_set_result(temp, WIPE_FACTORY) == RET_OK);
     return_null_if_fail(RET_OK == menuUnit_set_show(temp, &wipe_item_show));
+    //format ALL
+    temp = common_ui_init();
+    assert_if_fail(menuNode_add(p, temp) == RET_OK);
+    return_null_if_fail(menuUnit_set_name(temp, "<~format.all.name>") == RET_OK);
+    return_null_if_fail(menuUnit_set_result(temp, FORMAT_ALL) == RET_OK);
+    return_null_if_fail(RET_OK == menuUnit_set_show(temp, &wipe_item_show));
     //wipe_data
     temp = common_ui_init();
     assert_if_fail(menuNode_add(p, temp) == RET_OK);
@@ -144,12 +150,6 @@ struct _menuUnit* wipe_ui_init()
     assert_if_fail(menuNode_add(p, temp) == RET_OK);
     return_null_if_fail(menuUnit_set_name(temp, "<~format.sdcard.name>") == RET_OK);
     return_null_if_fail(menuUnit_set_result(temp, FORMAT_SDCARD) == RET_OK);
-    return_null_if_fail(RET_OK == menuUnit_set_show(temp, &wipe_item_show));
-    //format ALL
-    temp = common_ui_init();
-    assert_if_fail(menuNode_add(p, temp) == RET_OK);
-    return_null_if_fail(menuUnit_set_name(temp, "<~format.all.name>") == RET_OK);
-    return_null_if_fail(menuUnit_set_result(temp, FORMAT_ALL) == RET_OK);
     return_null_if_fail(RET_OK == menuUnit_set_show(temp, &wipe_item_show));
     return p;
 }
