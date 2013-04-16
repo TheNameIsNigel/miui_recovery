@@ -7,6 +7,7 @@
  */
 //typedef long time_t
 #include <errno.h>
+#include "miui_screen.h"
 
 static time_t time_orig;
 //for further consideration, change time_interval in device.conf
@@ -21,6 +22,26 @@ static int screen_set_time(time_t time)
     return_val_if_fail(time > 0, -1);
     miui_debug("set time %ld\n", time);
     time_orig = time;
+    return 0;
+}
+
+int screen_set_brightness(int brightness)
+{
+	pthread_mutex_lock(&mutex_screen);
+	int fd = open(acfg()->brightness_path, O_WRONLY);
+	if (fd <= 0)
+	{
+		miui_error("open %s failed!\n", acfg()->brightness_path);
+	}
+	else
+	{
+		if (write(fd, brightness, 1) <= 0)
+		{
+			miui_error("% write error %s", acfg()->brightness_path, strerror(errno));
+		}
+		close(fd);
+	}
+	pthread_mutex_unlock(&mutex_screen);
     return 0;
 }
 

@@ -8,17 +8,22 @@
 #include "../miui_inter.h"
 #include "../miui.h"
 #include "../../../miui_intent.h"
+#include "../libs/miui_screen.h"
 
 static STATUS brightness_menu_show(struct _menuUnit *p)
 {
 	switch(p->result) {
 		case 25:
+			screen_set_brightness(25);
 			break;
 		case 50:
+			screen_set_brightness(50);
 			break;
 		case 75:
+			screen_set_brightness(75);
 			break;
 		case 100:
+			screen_set_brightness(100);
 			break;
 		default:
 			//we should never get here!
