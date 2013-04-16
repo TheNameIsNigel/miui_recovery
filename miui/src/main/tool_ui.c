@@ -9,6 +9,24 @@
 #include "../miui.h"
 #include "../../../miui_intent.h"
 
+static STATUS brightness_menu_show(struct _menuUnit *p)
+{
+	switch(p->result) {
+		case 25:
+			break;
+		case 50:
+			break;
+		case 75:
+			break;
+		case 100:
+			break;
+		default:
+			//we should never get here!
+			break;
+	}
+	return MENU_BACK;
+}
+
 static STATUS battary_menu_show(struct _menuUnit* p)
 {
     if (RET_YES == miui_confirm(3, p->name, p->desc, p->icon)) {
@@ -55,6 +73,42 @@ static STATUS log_menu_show(struct _menuUnit* p)
     }
     return MENU_BACK;
 }
+
+struct _menuUnit* brightness_ui_init()
+{
+	struct _menuUnit *p = common_ui_init();
+	return_null_if_fail(p != NULL);
+	menuUnit_set_name(p, "Set Brightness");
+	menuUnit_set_title(p, "Set Brightness");
+	menuUnit_set_icon(p, "@tool");
+	assert_if_fail(menuNode_init(p) != NULL);
+	//25% brightness
+	struct _menuUnit *temp = common_ui_init();
+	menuUnit_set_name(temp, "25% Brightness");
+	menuUnit_set_show(temp, &brightness_menu_show);
+	menuUnit_set_result(temp, 25);
+	assert_if_fail(menuNode_add(p, temp) == RET_OK);
+	//50% brightness
+	temp = common_ui_init();
+	menuUnit_set_name(temp, "50% Brightness");
+	menuUnit_set_show(temp, &brightness_menu_show);
+	menuUnit_set_result(temp, 50);
+	assert_if_fail(menuNode_add(p, temp) == RET_OK);
+	//75% brightness
+	temp = common_ui_init();
+	menuUnit_set_name(temp, "75% Brightness");
+	menuUnit_set_show(temp, &brightness_menu_show);
+	menuUnit_set_result(temp, 75);
+	assert_if_fail(menuNode_add(p, temp) == RET_OK);
+	//100% brightness
+	temp = common_ui_init();
+	menuUnit_set_name(temp, "50% Brightness");
+	menuUnit_set_show(temp, &brightness_menu_show);
+	menuUnit_set_result(temp, 100);
+	assert_if_fail(menuNode_add(p, temp) == RET_OK);
+	return p;
+}
+
 struct _menuUnit* tool_ui_init()
 {
     struct _menuUnit *p = common_ui_init();
@@ -76,12 +130,14 @@ struct _menuUnit* tool_ui_init()
     menuUnit_set_icon(temp, "@tool.log");
     menuUnit_set_desc(temp, "<~tool.log.desc>");
     assert_if_fail(menuNode_add(p, temp) == RET_OK);
-
     //fix permission
     temp = common_ui_init();
     menuUnit_set_name(temp, "<~tool.permission.name>"); 
     menuUnit_set_icon(temp, "@tool.permission");
     menuUnit_set_show(temp, &permission_menu_show);
+    assert_if_fail(menuNode_add(p, temp) == RET_OK);
+    //set brightness
+    temp = brightness_ui_init();
     assert_if_fail(menuNode_add(p, temp) == RET_OK);
     return p;
 }
