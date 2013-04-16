@@ -1,4 +1,3 @@
-﻿### LICENSE:
 #--- COMMON SYSTEM STRING RESOURCE
 #
 text_ok=OK
@@ -23,7 +22,7 @@ default_desc=Are you sure?
 
 mainmenu.name=MAIN MENU
 mainmenu.title_name=MAIN MENU
-mainmenu.install.name=install from SD
+mainmenu.install.name=Install from SD
 mainmenu.tools.name=tools
 
 back.name=Back
@@ -44,7 +43,7 @@ sd.update.name=apply /sdcard/update.zip
 sd.log.save=Save Logs
 
 power.name=Power
-power.title=power operation
+power.title=Power Menu
 reboot.null= Reboot
 reboot.null.title= Reboot now
 reboot.recovery= Reboot Recovery
@@ -52,10 +51,10 @@ reboot.bootloader= Reboot Bootloader
 reboot.poweroff= Power Off
 
 alert.result=FAIL!
-alert.desc=operation failed
+alert.desc=Operation Failed
 
 mount.name=Storage Management
-mount.title=mount and toogle usb storage
+mount.title=mount and toggle USB storage
 mount.cache.name=Mount /cache
 mount.data.name=Mount /data
 mount.system.name=Mount /system
@@ -72,12 +71,12 @@ wipe.data.name=Wipe /data
 format.system.name=Format /system
 format.data.name=Format /data
 format.cache.name=Format /cache
-format.boot.name=Format boot
-format.sdcard.name=Format sdcard
+format.boot.name=Format /boot
+format.sdcard.name=Format /sdcard
 format.all.name=Pre-Flash Wipe
 
 backup.name=Backup and Restore
-backup.title=backup to sdcard and restore from sdcard
+backup.title=Backup and Restore from SDCARD
 backup.backup.name=Backup
 backup.restore.name=Restore
 advanced_backup.name=Advanced Backup
@@ -94,13 +93,13 @@ advanced_restore.boot.name=Restore boot
 advanced_restore.recovery.name=Restore recovery
 
 tool.name=Tools
-tool.title=advanced tools
-tool.key.name=key test
+tool.title=Advanced Tools
+tool.key.name=Key Test
 tool.time.name=timer setting
 tool.battary.name=Wipe battery stats
 tool.log.name=Save log to SDCard
 tool.log.desc=Are you sure? 
-tool.permission.name=Fix permissions
+tool.permission.name=Fix Permissions
 
 info.name=Info
 info.title=Information about COT NG Recovery
