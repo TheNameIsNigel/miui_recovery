@@ -17,6 +17,10 @@
 #define BACKUP_BOOT           5
 #define BACKUP_RECOVERY       6
 
+#define BACKUP_DELETE 17
+#define BROWSER_TYPE_RESTORE 1
+#define BROWSER_TYPE_DELETE 2
+
 #define RESTORE_ALL           11
 #define RESTORE_CACHE         12
 #define RESTORE_DATA          13
@@ -26,6 +30,25 @@
 
 static struct _menuUnit* p_current = NULL;
 static struct _menuUnit* backup_menu = NULL;
+static STATUS delete_backup(char* path)
+{
+	return_val_if_fail(p_current != NULL, RET_FAIL);
+	miui_busy_process();
+	switch(p_current->result) {
+		case BACKUP_DELETE:
+		{
+			char command[256];
+			snprintf(command, 256, "rm -rf %s", path);
+			miuiIntent_send(INTENT_SYSTEM, 1, command);
+		}
+			break;
+		default:
+			miui_error("p->resulte %d should not be the value\n", p_current->result);
+			break;
+	}
+	return RET_OK;
+}
+
 static STATUS backup_restore(char* path)
 {
     return_val_if_fail(p_current != NULL, RET_FAIL);
@@ -53,9 +76,9 @@ static STATUS backup_restore(char* path)
     return RET_OK;
 }
 
-static STATUS _backup_dir_show(char *path)
+static STATUS _show_backup_dir(char *path, int type)
 {
-    DIR* d;
+	DIR* d;
     struct dirent* de;
     d = opendir(path);
     return_val_if_fail(d != NULL, RET_FAIL);
@@ -149,7 +172,10 @@ static STATUS _backup_dir_show(char *path)
             *nandroid_restore(backup_path, restore_boot, system, data, chache , sdext, wimax)
             */
            if (p_current != NULL && RET_YES == miui_confirm(3, p_current->name, p_current->desc, p_current->icon)) {
-               backup_restore(new_path);
+				if (type == BROWSER_TYPE_RESTORE)
+					backup_restore(new_path);
+				else
+					delete_backup(new_path);
            }
            break;
        }
@@ -163,6 +189,23 @@ static STATUS _backup_dir_show(char *path)
    }
    free(zips);
    return result;
+}
+
+static STATUS backup_delete_show(menuUnit* p) {
+	p_current = p;
+	miuiIntent_send(INTENT_MOUNT, 1, "/sdcard");
+	return_val_if_fail(miuiIntent_result_get_int() == 0, MENU_BACK);
+	char path_name[PATH_MAX];
+	switch(p->result) {
+		case BACKUP_DELETE:
+			snprintf(path_name, PATH_MAX, "%s/backup/backup", RECOVERY_PATH);
+			break;
+		default:
+			miui_error("p->resulte %d should not be the value\n", p->result);
+			return MENU_BACK;
+	}
+	_show_backup_dir(path_name, BROWSER_TYPE_DELETE);
+	return MENU_BACK;
 }
 
 static STATUS restore_child_show(menuUnit* p)
@@ -191,7 +234,7 @@ static STATUS restore_child_show(menuUnit* p)
             miui_error("p->resulte %d should not be the value\n", p->result);
             return MENU_BACK;
     }
-    _backup_dir_show(path_name);
+    _show_backup_dir(path_name, BROWSER_TYPE_RESTORE);
     return MENU_BACK;
 }
 
@@ -321,8 +364,10 @@ struct _menuUnit* backup_ui_init()
     menuUnit_set_show(p, &common_menu_show);
     return_null_if_fail(menuNode_init(p) != NULL);
     backup_menu = p;
-    //backup
     struct _menuUnit* temp = common_ui_init();
+    
+    //backup
+    temp = common_ui_init();
     assert_if_fail(menuNode_add(p, temp) == RET_OK);
     menuUnit_set_name(temp, "<~backup.backup.name>");
     menuUnit_set_result(temp, BACKUP_ALL);
@@ -333,6 +378,12 @@ struct _menuUnit* backup_ui_init()
     menuUnit_set_name(temp, "<~backup.restore.name>");
     menuUnit_set_result(temp, RESTORE_ALL);
     menuUnit_set_show(temp, &restore_child_show);
+    //delete standard backups
+    temp = common_ui_init();
+    assert_if_fail(menuNode_add(p, temp) == RET_OK);
+    menuUnit_set_name(temp, "Delete Backups");
+    menuUnit_set_result(temp, BACKUP_DELETE);
+    menuUnit_set_show(temp, &backup_delete_show);
     //advanced backup
     temp = advanced_backup_ui_init();
     assert_if_fail(menuNode_add(p, temp) == RET_OK);
