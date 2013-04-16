@@ -1,5 +1,7 @@
 /*
  * Copyright (C) 2007 The Android Open Source Project
+ * Copyright (c) 2010, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2013, Project Open Cannibal
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -9,7 +11,9 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  * See the License for the specific language governing permissions and * limitations under the License.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <ctype.h>
@@ -26,6 +30,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <sys/stat.h>
 
 #include "bootloader.h"
 #include "common.h"
@@ -38,8 +43,13 @@
 #include "miui/src/miui.h"
 #include "miui_intent.h"
 #include "mtdutils/mounts.h"
+#include "flashutils/flashutils.h"
 
 #include "nandroid.h"
+#include "power.h"
+
+struct selabel_handle *sehandle = NULL;
+
 static const struct option OPTIONS[] = {
   { "send_intent", required_argument, NULL, 's' },
   { "update_package", required_argument, NULL, 'u' },
@@ -52,14 +62,21 @@ static const struct option OPTIONS[] = {
 static const char *COMMAND_FILE = "/cache/recovery/command";
 static const char *INTENT_FILE = "/cache/recovery/intent";
 static const char *LOG_FILE = "/cache/recovery/log";
-static const char *LAST_LOG_FILE = "/cache/recovery/last_log";
-static const char *LAST_INSTALL_FILE = "/cache/recovery/last_install";
+static const char *LAST_LOG_FILE = "/sdcard/cotrecovery/recovery_log";
 static const char *CACHE_ROOT = "/cache";
 static const char *SDCARD_ROOT = "/sdcard";
-static const char *TEMPORARY_LOG_FILE = "/tmp/miui_recovery.log";
+static int allow_display_toggle = 0;
+static int poweroff = 0;
+static const char *SDCARD_PACKAGE_FILE = "/sdcard/update.zip";
+static const char *TEMPORARY_LOG_FILE = "/tmp/recovery.log";
 static const char *TEMPORARY_INSTALL_FILE = "/tmp/last_install";
 static const char *SIDELOAD_TEMP_DIR = "/tmp/sideload";
 
+/* specify a main directory only, the root of sdcard or other_sd will be added as
+ * well as the suffix for backup or blobs */
+const char *DEFAULT_BACKUP_PATH = "cotrecovery";
+// We should make this check the other_sd as well...
+const char *USER_DEFINED_BACKUP_MARKER = "/sdcard/cotrecovery/.userdefinedbackups";
 
 /*
  * The recovery tool communicates with the main system through /cache files.
@@ -174,9 +191,10 @@ fopen_path(const char *path, const char *mode) {
 
     // When writing, try to create the containing directory, if necessary.
     // Use generous permissions, the system (init.rc) will reset them.
-    if (strchr("wa", mode[0])) dirCreateHierarchy(path, 0777, NULL, 1);
+    if (strchr("wa", mode[0])) dirCreateHierarchy(path, 0777, NULL, 1, sehandle);
 
     FILE *fp = fopen(path, mode);
+    if (fp == NULL && path != COMMAND_FILE) printf("Can't open %s\n", path);
     return fp;
 }
 
@@ -196,7 +214,9 @@ static void
 get_args(int *argc, char ***argv) {
     struct bootloader_message boot;
     memset(&boot, 0, sizeof(boot));
-    get_bootloader_message(&boot);  // this may fail, leaving a zeroed structure
+    if (device_flash_type() == MTD || device_flash_type() == MMC) {
+        get_bootloader_message(&boot);  // this may fail, leaving a zeroed structure
+    }
 
     if (boot.command[0] != 0 && boot.command[0] != 255) {
         LOGI("Boot command: %.*s\n", sizeof(boot.command), boot.command);
@@ -206,8 +226,10 @@ get_args(int *argc, char ***argv) {
         LOGI("Boot status: %.*s\n", sizeof(boot.status), boot.status);
     }
 
+    struct stat file_info;
+
     // --- if arguments weren't supplied, look in the bootloader control block
-    if (*argc <= 1) {
+    if (*argc <= 1 && 0 != stat("/tmp/.ignorebootmessage", &file_info)) {
         boot.recovery[sizeof(boot.recovery) - 1] = '\0';  // Ensure termination
         const char *arg = strtok(boot.recovery, "\n");
         if (arg != NULL && !strcmp(arg, "recovery")) {
@@ -264,7 +286,7 @@ set_sdcard_update_bootloader_message() {
 }
 
 // How much of the temp log we have copied to the copy in cache.
-static long tmplog_offset = 0;
+long tmplog_offset = 0;
 
 static void
 copy_log_file(const char* source, const char* destination, int append) {
@@ -309,13 +331,9 @@ finish_recovery(const char *send_intent) {
     // Copy logs to cache so the system can find out what happened.
     copy_log_file(TEMPORARY_LOG_FILE, LOG_FILE, true);
     copy_log_file(TEMPORARY_LOG_FILE, LAST_LOG_FILE, false);
-    copy_log_file(TEMPORARY_INSTALL_FILE, LAST_INSTALL_FILE, false);
-    chmod(LOG_FILE, 0600);
-    chown(LOG_FILE, 1000, 1000);   // system user
     chmod(LAST_LOG_FILE, 0640);
-    chmod(LAST_INSTALL_FILE, 0644);
 
-    // Reset to mormal system boot so recovery won't cycle indefinitely.
+    // Reset to normal system boot so recovery won't cycle indefinitely.
     struct bootloader_message boot;
     memset(&boot, 0, sizeof(boot));
     set_bootloader_message(&boot);
@@ -326,10 +344,13 @@ finish_recovery(const char *send_intent) {
         LOGW("Can't unlink %s\n", COMMAND_FILE);
     }
 
-    ensure_path_unmounted(CACHE_ROOT);
     sync();  // For good measure.
 }
 
+/**
+ * This really should be moved to the same location as the format/erase
+ * functionality.
+ */
 static int
 erase_volume(const char *volume) {
     ui_set_background(BACKGROUND_ICON_INSTALLING);
@@ -524,7 +545,7 @@ static intentResult* intent_install(int argc, char *argv[])
     return_intent_result_if_fail(argv != NULL);
     int wipe_cache = atoi(argv[1]);
     int echo = atoi(argv[2]);
-    miuiInstall_init(&install_package, argv[0], wipe_cache, TEMPORARY_INSTALL_FILE);
+    miuiInstall_init(&install_package, argv[0], wipe_cache);
     miui_install(echo);
     //echo install failed
     return miuiIntent_result_set(RET_OK, NULL);
@@ -538,8 +559,11 @@ static intentResult* intent_restore(int argc, char* argv[])
 {
     return_intent_result_if_fail(argc == 7);
     return_intent_result_if_fail(argv != NULL);
+    /* Accidentally removed wimax when importing the hybrid cotr nandroid, this
+     * will be fixed quick enough as the jb nandroid does have wimax and I will
+     * be updating this one to that after fixing some other functionality. */
     int result = nandroid_restore(argv[0], atoi(argv[1]), atoi(argv[2]), atoi(argv[3]),
-                                  atoi(argv[4]), atoi(argv[5]), atoi(argv[6]));
+                                  atoi(argv[4]), atoi(argv[5]));
     assert_ui_if_fail(result == 0);
     return miuiIntent_result_set(result, NULL);
 }
@@ -557,6 +581,9 @@ static intentResult* intent_backup(int argc, char* argv[])
     assert_ui_if_fail(result == 0);
     return miuiIntent_result_set(result, NULL);
 }
+/**
+ * TODO
+ * Rewrite advanced backup and restore to work w/ COTR nandroid.
 static intentResult* intent_advanced_backup(int argc, char* argv[])
 {
     return_intent_result_if_fail(argc == 2);
@@ -565,7 +592,7 @@ static intentResult* intent_advanced_backup(int argc, char* argv[])
     assert_ui_if_fail(result == 0);
     return miuiIntent_result_set(result, NULL);
 }
-
+*/
 static intentResult* intent_system(int argc, char* argv[])
 {
     return_intent_result_if_fail(argc == 1);
@@ -591,8 +618,26 @@ int
 main(int argc, char **argv) {
 	if (strcmp(basename(argv[0]), "recovery") != 0)
 	{
+        if (strstr(argv[0], "minizip") != NULL)
+            return minizip_main(argc, argv);
+		/**
+		 * TODO
+		 *  Import dedupe functionality for full nandroid support.
+		 *
+        if (strstr(argv[0], "dedupe") != NULL)
+            return dedupe_main(argc, argv);
+		 */
         if (strstr(argv[0], "flash_image") != NULL)
             return flash_image_main(argc, argv);
+        if (strstr(argv[0], "volume") != NULL)
+            return volume_main(argc, argv);
+        /**
+         * TODO
+         * 	Import edifyscripting for RomManager API support and activate this
+         *
+        if (strstr(argv[0], "edify") != NULL)
+            return edify_main(argc, argv);
+            */
         if (strstr(argv[0], "dump_image") != NULL)
             return dump_image_main(argc, argv);
         if (strstr(argv[0], "erase_image") != NULL)
@@ -615,16 +660,16 @@ main(int argc, char **argv) {
         if (strstr(argv[0], "poweroff")){
             return reboot_main(argc, argv);
         }
+        if (strstr(argv[0], "setprop"))
+            return setprop_main(argc, argv);
     }
-	__system("/sbin/postrecoveryboot.sh");
+    __system("/sbin/postrecoveryboot.sh");
+    __system("mkdir -p /storage");
+    __system("ln -s /sdcard /storage/sdcard0");
 
     time_t start = time(NULL);
 
     // If these fail, there's not really anywhere to complain...
-#ifndef DEBUG
-    unlink(TEMPORARY_LOG_FILE);
-#endif
-
     freopen(TEMPORARY_LOG_FILE, "a", stdout); setbuf(stdout, NULL);
     freopen(TEMPORARY_LOG_FILE, "a", stderr); setbuf(stderr, NULL);
     printf("Starting recovery on %s", ctime(&start));
@@ -640,17 +685,17 @@ main(int argc, char **argv) {
     miuiIntent_register(INTENT_FORMAT, &intent_format);
     miuiIntent_register(INTENT_RESTORE, &intent_restore);
     miuiIntent_register(INTENT_BACKUP, &intent_backup);
+    /**
+     * TODO
+     * Rewrite advanced backup and restore to work w/ COTR nandroid.
     miuiIntent_register(INTENT_ADVANCED_BACKUP, &intent_advanced_backup);
+    */
     miuiIntent_register(INTENT_SYSTEM, &intent_system);
     miuiIntent_register(INTENT_COPY, &intent_copy);
     device_ui_init();
     load_volume_table();
     get_args(&argc, &argv);
 
-    struct bootloader_message boot;
-    memset(&boot, 0, sizeof(boot));
-    set_bootloader_message(&boot);
-	create_fstab();
     int previous_runs = 0;
     const char *send_intent = NULL;
     const char *update_package = NULL;
@@ -662,7 +707,11 @@ main(int argc, char **argv) {
         case 'p': previous_runs = atoi(optarg); break;
         case 's': send_intent = optarg; break;
         case 'u': update_package = optarg; break;
-        case 'w': wipe_data = wipe_cache = 1; break;
+        case 'w': 
+#ifndef BOARD_RECOVERY_ALWAYS_WIPES
+        wipe_data = wipe_cache = 1;
+#endif
+        break;
         case 'c': wipe_cache = 1; break;
         //case 't': ui_show_text(1); break;
         case '?':
@@ -709,6 +758,7 @@ main(int argc, char **argv) {
     } else if (wipe_data) {
         if (device_wipe_data()) status = INSTALL_ERROR;
         if (erase_volume("/data")) status = INSTALL_ERROR;
+        ///if (has_datadata() && erase_volume("/datadata")) status = INSTALL_ERROR;
         if (wipe_cache && erase_volume("/cache")) status = INSTALL_ERROR;
         if (status != INSTALL_SUCCESS) ui_print("Data wipe failed.\n");
     } else if (wipe_cache) {
@@ -716,12 +766,37 @@ main(int argc, char **argv) {
         if (status != INSTALL_SUCCESS) ui_print("Cache wipe failed.\n");
     } else {
         status = INSTALL_ERROR;  // No command specified
+        //if (check_for_script_file()) run_script_file();
+        /**
+         * TODO
+         * 	Import edifyscripting for RomManager API support and activate this
+         *
+        if (extendedcommand_file_exists()) {
+            LOGI("Running extendedcommand...\n");
+            int ret;
+            if (0 == (ret = run_and_remove_extendedcommand())) {
+                status = INSTALL_SUCCESS;
+            } else {
+                handle_failure(ret);
+            }
+        } else {
+            LOGI("Skipping execution of extendedcommand, file not found...\n");
+        }
+        */
     }
     if (status != INSTALL_SUCCESS) device_main_ui_show();//show menu
     device_main_ui_release();
+
+    verify_root_and_recovery();
+
+    // If there is a radio image pending, reboot now to install it.
+    /* Disabled until firmware.c can be patched.
+    maybe_install_firmware_update(send_intent);
+    */
+
     // Otherwise, get ready to boot the main system...
     finish_recovery(send_intent);
     ui_print("Rebooting...\n");
-    android_reboot(ANDROID_RB_RESTART, 0, 0);
+    pass_normal_reboot();
     return EXIT_SUCCESS;
 }

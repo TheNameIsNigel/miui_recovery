@@ -20,8 +20,9 @@
 #include <signal.h>
 #include <sys/wait.h>
 
-#include "../libcrecovery/common.h"
-#define BML_UNLOCK_ALL              0x8A29///< unlock all partition RO -> RW
+#include <common.h>
+
+#define BML_UNLOCK_ALL				0x8A29		///< unlock all partition RO -> RW
 
 #ifndef BOARD_BML_BOOT
 #define BOARD_BML_BOOT              "/dev/block/bml7"

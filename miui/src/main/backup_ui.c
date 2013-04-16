@@ -242,7 +242,7 @@ static STATUS backup_child_show(menuUnit* p)
 {
     p_current = p;
     miuiIntent_send(INTENT_MOUNT, 1, "/sdcard");
-    char path_name[PATH_MAX];
+    char backup_path[PATH_MAX];
     static time_t timep;
     static struct tm *time_tm;
     time(&timep);
@@ -252,11 +252,13 @@ static STATUS backup_child_show(menuUnit* p)
         miui_busy_process();
         switch(p->result) {
             case BACKUP_ALL:
-                snprintf(path_name,PATH_MAX, "%s/backup/backup/%02d%02d%02d-%02d%02d",
-                        RECOVERY_PATH, time_tm->tm_year,
-                        time_tm->tm_mon + 1, time_tm->tm_mday, time_tm->tm_hour, time_tm->tm_min);
-                miuiIntent_send(INTENT_BACKUP, 1, path_name);
+				nandroid_generate_timestamp_path(backup_path);
+                miuiIntent_send(INTENT_BACKUP, 1, backup_path);
                 break;
+/**
+ * Disable advanced backup functions until imported (COTR hybrid) nandroid can
+ * be re-patched
+ *
             case BACKUP_CACHE:
                 snprintf(path_name,PATH_MAX, "%s/backup/cache/%02d%02d%02d-%02d%02d",
                         RECOVERY_PATH, time_tm->tm_year,
@@ -281,6 +283,7 @@ static STATUS backup_child_show(menuUnit* p)
                         time_tm->tm_mon + 1, time_tm->tm_mday, time_tm->tm_hour, time_tm->tm_min);
                 miuiIntent_send(INTENT_ADVANCED_BACKUP, 2 , path_name, "/boot");
                 break;
+ */
             default:
                 miui_error("p->resulte %d should not be the value\n", p->result);
                 break;
@@ -386,11 +389,15 @@ struct _menuUnit* backup_ui_init()
     menuUnit_set_name(temp, "<~backup.restore.name>");
     menuUnit_set_result(temp, RESTORE_ALL);
     menuUnit_set_show(temp, &restore_child_show);
+/**
+ * Disabled for the above listed reasons
+ *
     //advanced backup
     temp = advanced_backup_ui_init();
     assert_if_fail(menuNode_add(p, temp) == RET_OK);
     //advanced restore
     temp = advanced_restore_ui_init();
     assert_if_fail(menuNode_add(p, temp) == RET_OK);
+ */
     return p;
 }

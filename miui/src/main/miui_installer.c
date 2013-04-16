@@ -74,7 +74,6 @@ void ai_canvas_unlock()
 static struct _miuiInstall miui_install_struct ={
     .pfun = NULL,
     .path = NULL,
-    .install_file = NULL,
     .wipe_cache = 0
 };
 static struct _miuiInstall* pmiui_install = &miui_install_struct;
@@ -483,11 +482,10 @@ int miui_start_install(
   return WEXITSTATUS(ai_return_status);
 }
 
-STATUS miuiInstall_init(miuiInstall_fun fun, char* path, int wipe_cache, char* install_file)
+STATUS miuiInstall_init(miuiInstall_fun fun, char* path, int wipe_cache)
 {
     pmiui_install->path = path;
     pmiui_install->wipe_cache = wipe_cache;
-    pmiui_install->install_file = install_file;
     pmiui_install->pfun = fun;
     return RET_OK;
 }

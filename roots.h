@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2007 The Android Open Source Project
+ * Copyright (c) 2013, Project Open Cannibal
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #ifndef RECOVERY_ROOTS_H_
 #define RECOVERY_ROOTS_H_
 
@@ -41,16 +41,15 @@ int format_volume(const char* volume);
 
 int get_num_volumes();
 
+// Imported from extendedcommands in CWM
+int volume_main(int argc, char **argv);
+int is_path_mounted(const char* path);
+
 Volume* get_device_volumes();
 
 int is_data_media();
 void setup_data_media();
 int is_data_media_volume_path(const char* path);
+void handle_data_media_format(int handle);
 
-//whether path mounted or unmounted
-int is_path_mounted(const char* path);
-
-int format_unknown_device(const char *device, const char* path, const char *fs_type);
-int format_device(const char *device, const char *path, const char *fs_type) ;
-int has_datadata() ;
 #endif  // RECOVERY_ROOTS_H_

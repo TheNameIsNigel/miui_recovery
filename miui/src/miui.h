@@ -237,7 +237,7 @@ typedef struct _miuiInstall {
     int wipe_cache;
 }miuiInstall, *pmiuiInstall;
 //for install init 
-STATUS miuiInstall_init(miuiInstall_fun fun, char *path, int wipe_cache, char* install_file);
+STATUS miuiInstall_init(miuiInstall_fun fun, char *path, int wipe_cache);
 
 void miuiInstall_show_progress(float portion, int seconds);
 void miuiInstall_set_progress(float fraction);
