@@ -77,9 +77,9 @@ static long delta_milliseconds(struct timeval from, struct timeval to) {
 #define NANDROID_UPDATE_INTERVAL 1000
 
 static struct timeval lastupdate = (struct timeval) {0};
-static int yaffs_files_total = 0;
-static int yaffs_files_count = 0;
-static void yaffs_callback(const char* filename)
+static int nandroid_files_total = 0;
+static int nandroid_files_count = 0;
+static void nandroid_callback(const char* filename)
 {
     if (filename == NULL)
         return;
@@ -93,7 +93,7 @@ static void yaffs_callback(const char* filename)
      * updates and updating every file uses WAY
      * too much CPU time.
      */
-    yaffs_files_count++;
+    nandroid_files_count++;
     if(delta_milliseconds(lastupdate,curtime) > NANDROID_UPDATE_INTERVAL)
       {
         strcpy(tmp, justfile);
@@ -104,8 +104,8 @@ static void yaffs_callback(const char* filename)
           ui_print("%s", tmp);
 	}
 
-        if (yaffs_files_total != 0)
-          ui_set_progress((float)yaffs_files_count / (float)yaffs_files_total);
+        if (nandroid_files_total != 0)
+          ui_set_progress((float)nandroid_files_count / (float)nandroid_files_total);
       }
 }
 
@@ -118,8 +118,8 @@ static void compute_directory_stats(const char* directory)
     FILE* f = fopen("/tmp/dircount", "r");
     fread(count_text, 1, sizeof(count_text), f);
     fclose(f);
-    yaffs_files_count = 0;
-    yaffs_files_total = atoi(count_text);
+    nandroid_files_count = 0;
+    nandroid_files_total = atoi(count_text);
     ui_reset_progress();
     ui_show_progress(1, 0);
 }
@@ -128,31 +128,27 @@ typedef void (*file_event_callback)(const char* filename);
 typedef int (*nandroid_backup_handler)(const char* backup_path, const char* backup_file_image, int callback);
 
 static int mkyaffs2image_wrapper(const char* backup_path, const char* backup_file_image, int callback) {
-    char tmp[PATH_MAX];
-    sprintf(tmp, "cd %s ; mkyaffs2image . %s.img ; exit $?", backup_path, backup_file_image);
-
-    FILE *fp = __popen(tmp, "r");
-    if (fp == NULL) {
-        ui_print("Unable to execute mkyaffs2image.\n");
-        return -1;
-    }
-
-    while (fgets(tmp, PATH_MAX, fp) != NULL) {
-        tmp[PATH_MAX - 1] = NULL;
-        if (callback)
-            yaffs_callback(tmp);
-    }
-
-    return __pclose(fp);
+	char tmp[PATH_MAX];
+	sprintf(tmp, "cd %s ; mkyaffs2image . %s.img ; exit $?", backup_path, backup_file_image);
+	FILE *fp = __popen(tmp, "r");
+	if (fp == NULL) {
+		ui_print("Unable to execute mkyaffs2image.\n");
+		return -1;
+	}
+	
+	while (fgets(tmp, PATH_MAX, fp) != NULL) {
+		tmp[PATH_MAX - 1] = NULL;
+		if (callback)
+			nandroid_callback(tmp);
+	}
+	
+	return __pclose(fp);
 }
 
 static int tar_compress_wrapper(const char* backup_path, const char* backup_file_image, int callback) {
     char tmp[PATH_MAX];
-    if (strcmp(backup_path, "/data") == 0 && volume_for_path("/sdcard") == NULL)
-      sprintf(tmp, "cd $(dirname %s) ; tar cvf %s.tar --exclude 'media' $(basename %s) ; exit $?", backup_path, backup_file_image, backup_path);
-    else
-      sprintf(tmp, "cd $(dirname %s) ; tar cvf %s.tar $(basename %s) ; exit $?", backup_path, backup_file_image, backup_path);
-
+    sprintf(tmp, "cd $(dirname %s) ; touch %s.tar ; (tar cv %s $(basename %s) | split -a 1 -b 1000000000 /proc/self/fd/0 %s.tar.) 2> /proc/self/fd/1 ; exit $?", backup_path, backup_file_image, strcmp(backup_path, "/data") == 0 && is_data_media() ? "--exclude 'media'" : "", backup_path, backup_file_image);
+    
     FILE *fp = __popen(tmp, "r");
     if (fp == NULL) {
         ui_print("Unable to execute tar.\n");
@@ -164,7 +160,7 @@ static int tar_compress_wrapper(const char* backup_path, const char* backup_file
     while (fgets(tmp, PATH_MAX, fp) != NULL) {
         tmp[PATH_MAX - 1] = NULL;
         if (callback)
-            yaffs_callback(tmp);
+            nandroid_callback(tmp);
     }
 
     return __pclose(fp);
@@ -207,13 +203,7 @@ static int nandroid_backup_partition_extended(const char* backup_path, const cha
     char* name = basename(mount_point);
 
     struct stat file_info;
-    int callback = stat("/sdcard/clockworkmod/.hidenandroidprogress", &file_info) != 0;
-
-    ui_print("Backing up %s...\n", name);
-    if (0 != (ret = ensure_path_mounted(mount_point) != 0)) {
-        ui_print("Can't mount %s!\n", mount_point);
-        return ret;
-    }
+    int callback = stat("/sdcard/miui_recovery/.hidenandroidprogress", &file_info) != 0;
     compute_directory_stats(mount_point);
     char tmp[PATH_MAX];
     scan_mounted_volumes();
@@ -426,8 +416,21 @@ static void ensure_directory(const char* dir) {
 typedef int (*nandroid_restore_handler)(const char* backup_file_image, const char* backup_path, int callback);
 
 static int unyaffs_wrapper(const char* backup_file_image, const char* backup_path, int callback) {
-    gettimeofday(&lastupdate,NULL);
-    return unyaffs(backup_file_image, backup_path, callback ? yaffs_callback : NULL);
+    char tmp[PATH_MAX];
+    sprintf(tmp, "cd %s ; unyaffs %s ; exit $?", backup_path, backup_file_image);
+    FILE *fp = __popen(tmp, "r");
+    if (fp == NULL) {
+	    ui_print("Unable to execute unyaffs.\n");
+	    return -1;
+	}
+	
+	while (fgets(tmp, PATH_MAX, fp) != NULL) {
+		tmp[PATH_MAX - 1] = NULL;
+		if (callback)
+			nandroid_callback(tmp);
+		}
+		
+		return __pclose(fp);
 }
 
 static int tar_extract_wrapper(const char* backup_file_image, const char* backup_path, int callback) {
@@ -445,7 +448,7 @@ static int tar_extract_wrapper(const char* backup_file_image, const char* backup
 
     while (fgets(path, PATH_MAX, fp) != NULL) {
         if (callback)
-            yaffs_callback(path);
+            nandroid_callback(path);
     }
 
     return __pclose(fp);
@@ -619,7 +622,7 @@ int nandroid_restore(const char* backup_path, int restore_boot, int restore_syst
 {
     ui_set_background(BACKGROUND_ICON_INSTALLING);
     ui_show_indeterminate_progress();
-    yaffs_files_total = 0;
+    nandroid_files_total = 0;
 
     if (ensure_path_mounted(backup_path) != 0)
         return print_and_error("Can't mount backup path\n");
