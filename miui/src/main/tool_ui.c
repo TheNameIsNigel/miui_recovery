@@ -102,7 +102,7 @@ struct _menuUnit* brightness_ui_init()
 	assert_if_fail(menuNode_add(p, temp) == RET_OK);
 	//100% brightness
 	temp = common_ui_init();
-	menuUnit_set_name(temp, "50% Brightness");
+	menuUnit_set_name(temp, "100% Brightness");
 	menuUnit_set_show(temp, &brightness_menu_show);
 	menuUnit_set_result(temp, 100);
 	assert_if_fail(menuNode_add(p, temp) == RET_OK);
