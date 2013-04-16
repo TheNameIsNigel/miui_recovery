@@ -2101,7 +2101,7 @@ int miui_ui_config(const char *file)
     struct stat file_stat;
     if (stat(file, &file_stat) < 0)
     {
-        miui_printf("stat file error, file is not exist");
+        miui_printf("file %s not found\n", file);
         return -1;
     }
     char *script_data = miui_readfromfs(file);

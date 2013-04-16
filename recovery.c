@@ -695,6 +695,7 @@ main(int argc, char **argv) {
     device_ui_init();
     load_volume_table();
     get_args(&argc, &argv);
+    create_fstab();
 
     int previous_runs = 0;
     const char *send_intent = NULL;

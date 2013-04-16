@@ -271,28 +271,45 @@ static int print_and_error(const char* message) {
     return 1;
 }
 
+static long delta_milliseconds(struct timeval from, struct timeval to) {
+  long delta_sec = (to.tv_sec - from.tv_sec)*1000;
+  long delta_usec = (to.tv_usec - from.tv_usec)/1000;
+  return (delta_sec + delta_usec);
+}
+
+#define NANDROID_UPDATE_INTERVAL 1000
+
+static struct timeval lastupdate = (struct timeval) {0};
 static int nandroid_files_total = 0;
 static int nandroid_files_count = 0;
 
 static void nandroid_callback(const char* filename)
 {
-    if (filename == NULL)
-        return;
-    const char* justfile = basename(filename);
-    char tmp[PATH_MAX];
-    strcpy(tmp, justfile);
-    if (tmp[strlen(tmp) - 1] == '\n')
-        tmp[strlen(tmp) - 1] = NULL;
-    if (strlen(tmp) < 30)
-        ui_print("%s", tmp);
-    /**
-     * TODO
-     * 	something with this lol
-     *
-    nandroid_files_count++;
-    if (nandroid_files_total != 0)
-        ui_set_progress((float)nandroid_files_count / (float)nandroid_files_total);
-        */
+	if (filename == NULL)
+		return;
+	const char* justfile = basename(filename);
+	char tmp[PATH_MAX];
+	struct timeval curtime;
+	gettimeofday(&curtime,NULL);
+	/*
+	 * Only update once every NANDROID_UPDATE_INTERVAL
+	 * milli seconds.  We don't need frequent progress
+	 * updates and updating every file uses WAY
+	 * too much CPU time.
+	 */
+	nandroid_files_count++;
+	if(delta_milliseconds(lastupdate,curtime) > NANDROID_UPDATE_INTERVAL) {
+		strcpy(tmp, justfile);
+		if(tmp[strlen(tmp) - 1] == '\n')
+			tmp[strlen(tmp) - 1] = NULL;
+		if(strlen(tmp) < 30) {
+			lastupdate = curtime;
+			ui_print("%s", tmp);
+		}
+
+		if (nandroid_files_total != 0)
+			ui_set_progress((float)nandroid_files_count / (float)nandroid_files_total);
+	}
 }
 
 static void compute_directory_stats(const char* directory)
@@ -551,7 +568,7 @@ int nandroid_backup(const char* backup_path)
     }
 
     sync();
-    ui_set_background(BACKGROUND_ICON_CLOCKWORK);
+    ui_set_background(BACKGROUND_ICON_NONE);
     ui_reset_progress();
     ui_print("\nBackup complete!\n");
     return 0;
@@ -744,16 +761,23 @@ int nandroid_restore_partition_extended(const char* backup_path, const char* mou
             printf("Found new backup image: %s\n", tmp);
         }
 
-        // If the fs_type of this volume is "auto", let's revert to using a
-        // rm -rf, rather than trying to do a ext3/ext4/whatever format.
+        // If the fs_type of this volume is "auto" or mount_point is /data
+        // and is_data_media (redundantly, and vol for /sdcard is NULL), let's revert
+        // to using a rm -rf, rather than trying to do a
+        // ext3/ext4/whatever format.
         // This is because some phones (like DroidX) will freak out if you
         // reformat the /system or /data partitions, and not boot due to
         // a locked bootloader.
+        // Other devices, like the Galaxy Nexus, XOOM, and Galaxy Tab 10.1
+        // have a /sdcard symlinked to /data/media. /data is set to "auto"
+        // so that when the format occurs, /data/media is not erased.
         // The "auto" fs type preserves the file system, and does not
         // trigger that lock.
         // Or of volume does not exist (.android_secure), just rm -rf.
         if (vol == NULL || 0 == strcmp(vol->fs_type, "auto"))
             backup_filesystem = NULL;
+        else if (0 == strcmp(vol->mount_point, "/data") && volume_for_path("/sdcard") == NULL && is_data_media())
+	         backup_filesystem = NULL;
     }
 
     ensure_directory(mount_point);
@@ -871,7 +895,7 @@ int nandroid_restore(const char* backup_path, int restore_boot, int restore_syst
         return ret;
 
     sync();
-    ui_set_background(BACKGROUND_ICON_CLOCKWORK);
+    ui_set_background(BACKGROUND_ICON_NONE);
     ui_reset_progress();
     ui_print("\nRestore complete!\n");
     return 0;
