@@ -366,6 +366,14 @@ struct _menuUnit* backup_ui_init()
     backup_menu = p;
     struct _menuUnit* temp = common_ui_init();
     
+    //delete standard backups
+    temp = common_ui_init();
+    assert_if_fail(menuNode_add(p, temp) == RET_OK);
+    menuUnit_set_name(temp, "Delete Backups");
+    menuUnit_set_result(temp, BACKUP_DELETE);
+    menuUnit_set_show(temp, &backup_delete_show);
+    //delete advanced backups
+    /* TODO: not implemented */
     //backup
     temp = common_ui_init();
     assert_if_fail(menuNode_add(p, temp) == RET_OK);
@@ -378,12 +386,6 @@ struct _menuUnit* backup_ui_init()
     menuUnit_set_name(temp, "<~backup.restore.name>");
     menuUnit_set_result(temp, RESTORE_ALL);
     menuUnit_set_show(temp, &restore_child_show);
-    //delete standard backups
-    temp = common_ui_init();
-    assert_if_fail(menuNode_add(p, temp) == RET_OK);
-    menuUnit_set_name(temp, "Delete Backups");
-    menuUnit_set_result(temp, BACKUP_DELETE);
-    menuUnit_set_show(temp, &backup_delete_show);
     //advanced backup
     temp = advanced_backup_ui_init();
     assert_if_fail(menuNode_add(p, temp) == RET_OK);
