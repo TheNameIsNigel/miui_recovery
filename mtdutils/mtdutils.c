@@ -651,19 +651,19 @@ int cmd_mtd_backup_raw_partition(const char *partition_name, const char *filenam
 
     if (mtd_scan_partitions() <= 0)
     {
-        printf("error scanning partitions");
+        printf("error scanning partitions\n");
         return -1;
     }
 
     partition = mtd_find_partition_by_name(partition_name);
     if (partition == NULL)
     {
-        printf("can't find %s partition", partition_name);
+        printf("can't find %s partition\n", partition_name);
         return -1;
     }
 
     if (mtd_partition_info(partition, &partition_size, NULL, NULL)) {
-        printf("can't get info of partition %s", partition_name);
+        printf("can't get info of partition %s\n", partition_name);
         return -1;
     }
 
@@ -671,12 +671,15 @@ int cmd_mtd_backup_raw_partition(const char *partition_name, const char *filenam
         fd = fileno(stdout);
     }
     else {
+		/* This code is identical to that in every other version of mtdutils
+		 * why is it failing to open files for the optimus s? (this must be
+		 * legacy device related) */
         fd = open(filename, O_WRONLY|O_CREAT|O_TRUNC, 0666);
     }
 
     if (fd < 0)
     {
-       printf("error opening %s", filename);
+       printf("error opening %s\n", filename);
        return -1;
     }
 
@@ -694,7 +697,7 @@ int cmd_mtd_backup_raw_partition(const char *partition_name, const char *filenam
         if (wrote != len) {
             close(fd);
             unlink(filename);
-            printf("error writing %s", filename);
+            printf("error writing %s\n", filename);
             return -1;
         }
         total += BLOCK_SIZE;
@@ -704,7 +707,7 @@ int cmd_mtd_backup_raw_partition(const char *partition_name, const char *filenam
 
     if (close(fd)) {
         unlink(filename);
-        printf("error closing %s", filename);
+        printf("error closing %s\n", filename);
         return -1;
     }
     return 0;
