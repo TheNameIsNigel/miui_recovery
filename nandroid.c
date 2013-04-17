@@ -263,11 +263,7 @@ void nandroid_generate_timestamp_path(const char* backup_path)
 int ensure_directory(const char* dir) {
 	char tmp[PATH_MAX];
 	sprintf(tmp, "mkdir -p %s ; chmod 777 %s", dir, dir);
-	struct stat ret;
-	if(stat(__system(tmp), &ret) != 0) {
-		ui_print("Failed to create directory at %s.\n", dir);
-		return -1;
-	}
+	__system(tmp);
 	return 0;
 }
 
