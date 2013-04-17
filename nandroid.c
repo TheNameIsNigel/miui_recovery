@@ -783,7 +783,7 @@ int nandroid_restore_partition_extended(const char* backup_path, const char* mou
     }
 
 	// Cancel the backup if ensure_directory fails for any reason.
-	if(0 != (ret = ensure_directory(backup_path)))
+	if(0 != (ret = ensure_directory(mount_point)))
 		return ret;
 
     int callback = stat("/sdcard/cotrecovery/.hidenandroidprogress", &file_info) != 0;
