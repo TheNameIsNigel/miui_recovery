@@ -260,10 +260,15 @@ void nandroid_generate_timestamp_path(const char* backup_path)
     }
 }
 
-void ensure_directory(const char* dir) {
-    char tmp[PATH_MAX];
-    sprintf(tmp, "mkdir -p %s ; chmod 777 %s", dir, dir);
-    __system(tmp);
+int ensure_directory(const char* dir) {
+	char tmp[PATH_MAX];
+	sprintf(tmp, "mkdir -p %s ; chmod 777 %s", dir, dir);
+	struct stat ret;
+	if(stat(__system(tmp), &ret) != 0) {
+		ui_print("Failed to create directory at %s.\n", dir);
+		return -1;
+	}
+	return 0;
 }
 
 static int print_and_error(const char* message) {
@@ -516,7 +521,9 @@ int nandroid_backup(const char* backup_path)
 		///}
 	}
 
-	ensure_directory(backup_path);
+	// Cancel the backup if ensure_directory fails for any reason.
+	if(0 != (ret = ensure_directory(backup_path)))
+		return ret;
 
     if (0 != (ret = nandroid_backup_partition(backup_path, "/boot")))
         return ret;
@@ -597,7 +604,9 @@ int nandroid_advanced_backup(const char* backup_path, int boot, int recovery, in
 		}
 	}
 
-	ensure_directory(backup_path);
+	// Cancel the backup if ensure_directory fails for any reason.
+	if(0 != (ret = ensure_directory(backup_path)))
+		return ret;
 
     if (boot && 0 != (ret = nandroid_backup_partition(backup_path, "/boot")))
         return ret;
@@ -773,7 +782,9 @@ int nandroid_restore_partition_extended(const char* backup_path, const char* mou
 	         backup_filesystem = NULL;
     }
 
-    ensure_directory(mount_point);
+	// Cancel the backup if ensure_directory fails for any reason.
+	if(0 != (ret = ensure_directory(backup_path)))
+		return ret;
 
     int callback = stat("/sdcard/cotrecovery/.hidenandroidprogress", &file_info) != 0;
 
