@@ -455,7 +455,7 @@ int nandroid_backup_partition(const char* backup_path, const char* root) {
         sprintf(tmp, "%s/%s.img", backup_path, name);
         ui_print("Backing up %s image...\n", name);
         if (0 != (ret = backup_raw_partition(vol->fs_type, vol->device, tmp))) {
-            ui_print("Error while backing up %s image!", name);
+            ui_print("Error while backing up %s image!\n", name);
             return ret;
         }
         return 0;
@@ -463,12 +463,15 @@ int nandroid_backup_partition(const char* backup_path, const char* root) {
     return nandroid_backup_partition_extended(backup_path, root, 1);
 }
 
-int recalc_sdcard_space(const char* backup_path)
-{
+int has_datadata() {
+    Volume *vol = volume_for_path("/datadata");
+    return vol != NULL;
+}
+
+int recalc_sdcard_space(const char* backup_path) {
 	struct statfs s;
 	int ret;
 	Volume* volume = volume_for_path(backup_path);
-	//static char mount_point = "/sdcard/"
 	if (0 != (ret = statfs(volume->mount_point, &s))) {
 		return print_and_error("Can't mount sdcard.\n");
 	}
@@ -527,15 +530,10 @@ int nandroid_backup(const char* backup_path)
     if (0 != (ret = nandroid_backup_partition(backup_path, "/data")))
         return ret;
 
-	/**
-	 * TODO
-	 * 	Re-enable datadata support (found in extendedcommands)
-	 *
 	if (has_datadata()) {
 	    if (0 != (ret = nandroid_backup_partition(backup_path, "/datadata")))
 			return ret;
 	}
-	*/
 
     if (0 != stat("/sdcard/.android_secure", &s)) {
         ui_print("No /sdcard/.android_secure found. Skipping backup of applications on external storage.\n");
@@ -613,15 +611,10 @@ int nandroid_advanced_backup(const char* backup_path, int boot, int recovery, in
     if (data && 0 != (ret = nandroid_backup_partition(backup_path, "/data")))
         return ret;
 
-	/**
-	 * TODO
-	 * 	Re-enable datadata support (found in extendedcommands)
-	 *
     if (data && has_datadata()) {
         if (0 != (ret = nandroid_backup_partition(backup_path, "/datadata")))
             return ret;
     }
-    */
 
     if (0 != stat("/sdcard/.android_secure", &s)) {
         ui_print("No /sdcard/.android_secure found. Skipping backup of applications on external storage.\n");

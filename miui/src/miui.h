@@ -20,7 +20,9 @@ typedef int STATUS;
 #define MENU_QUIT ITEM_COUNT + 1
 
 #define MIUI_LOG_FILE "/tmp/miui_recovery.log"
-#define RECOVERY_PATH "/sdcard/miui_recovery"
+/* Changed to match nandroid paths but nandroid is using it's own generated
+ * paths anyway as it's reduced code and allows for user defined backups. */
+#define RECOVERY_PATH "/sdcard/cotrecovery"
 
 #ifndef miui_printf
 #define miui_printf printf

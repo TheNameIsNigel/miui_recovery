@@ -195,16 +195,16 @@ static STATUS backup_delete_show(menuUnit* p) {
 	p_current = p;
 	miuiIntent_send(INTENT_MOUNT, 1, "/sdcard");
 	return_val_if_fail(miuiIntent_result_get_int() == 0, MENU_BACK);
-	char path_name[PATH_MAX];
+	char backup_path[PATH_MAX];
 	switch(p->result) {
 		case BACKUP_DELETE:
-			snprintf(path_name, PATH_MAX, "%s/backup/backup", RECOVERY_PATH);
+			nandroid_get_backup_path(backup_path);
 			break;
 		default:
 			miui_error("p->resulte %d should not be the value\n", p->result);
 			return MENU_BACK;
 	}
-	_show_backup_dir(path_name, BROWSER_TYPE_DELETE);
+	_show_backup_dir(backup_path, BROWSER_TYPE_DELETE);
 	return MENU_BACK;
 }
 
@@ -213,11 +213,15 @@ static STATUS restore_child_show(menuUnit* p)
     p_current = p;
     miuiIntent_send(INTENT_MOUNT, 1, "/sdcard");
     return_val_if_fail(miuiIntent_result_get_int() == 0, MENU_BACK);
-    char path_name[PATH_MAX];
+    char backup_path[PATH_MAX];
     switch(p->result) {
         case RESTORE_ALL:
-            snprintf(path_name,PATH_MAX, "%s/backup/backup", RECOVERY_PATH);
+            nandroid_get_backup_path(backup_path);
             break;
+/**
+ * Disable advanced restore functions until imported (COTR hybrid) nandroid can
+ * be re-patched
+ *
         case RESTORE_CACHE:
             snprintf(path_name,PATH_MAX, "%s/backup/cache", RECOVERY_PATH);
             break;
@@ -230,11 +234,12 @@ static STATUS restore_child_show(menuUnit* p)
         case RESTORE_BOOT:
             snprintf(path_name,PATH_MAX, "%s/backup/boot", RECOVERY_PATH);
             break;
+            */
         default:
-            miui_error("p->resulte %d should not be the value\n", p->result);
+            miui_error("p->result %d should not be the value\n", p->result);
             return MENU_BACK;
     }
-    _show_backup_dir(path_name, BROWSER_TYPE_RESTORE);
+    _show_backup_dir(backup_path, BROWSER_TYPE_RESTORE);
     return MENU_BACK;
 }
 
