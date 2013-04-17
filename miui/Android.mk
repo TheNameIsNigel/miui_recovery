@@ -78,6 +78,14 @@ LOCAL_SRC_FILES := \
 LOCAL_C_INCLUDES += $(libmiui_common_includes)
 LOCAL_CFLAGS := $(MYDEFINE_CFLAGS)
 
+BOARD_UILIB_DEFINES := BOARD_LCD_BRIGHTNESS_FILE
+
+$(foreach board_define,$(BOARD_UILIB_DEFINES), \
+	$(if $($(board_define)), \
+		$(eval LOCAL_CFLAGS += -D$(board_define)=\"$($(board_define))\") \
+	) \
+)
+
 LOCAL_STATIC_LIBRARIES += libc libm
 LOCAL_MODULE := libmiui
 

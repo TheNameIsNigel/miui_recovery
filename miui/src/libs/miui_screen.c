@@ -25,7 +25,7 @@ static int screen_set_time(time_t time)
     return 0;
 }
 
-int screen_set_brightness(int brightness)
+int screen_set_brightness(char* brightness)
 {
 	pthread_mutex_lock(&mutex_screen);
 	int fd = open(acfg()->brightness_path, O_WRONLY);
