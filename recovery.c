@@ -690,7 +690,11 @@ main(int argc, char **argv) {
             strlcat(modified_path, update_package+6, len);
             printf("(replacing path \"%s\" with \"%s\")\n",
                    update_package, modified_path);
-            update_package = modified_path;
+            if (strcasecmp(update_package, "CACHE:") == 0) {
+				update_package = NULL;
+			} else {
+				update_package = modified_path;
+            }
         }
     }
     printf("\n");
