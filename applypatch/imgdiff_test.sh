@@ -106,6 +106,7 @@ for i in $((zipinfo -1 $START_OTA_PACKAGE; zipinfo -1 $END_OTA_PACKAGE) | \
 done
 patch_and_apply boot.img
 patch_and_apply system/recovery.img
+patch_and_apply modem.bin
 
 
 # --------------- cleanup ----------------------
