@@ -78,6 +78,8 @@ const char *DEFAULT_BACKUP_PATH = "cotrecovery";
 // We should make this check the other_sd as well...
 const char *USER_DEFINED_BACKUP_MARKER = "/sdcard/cotrecovery/.userdefinedbackups";
 
+int OTHER_SD_CARD = NULL;
+
 /*
  * The recovery tool communicates with the main system through /cache files.
  *   /cache/recovery/command - INPUT - command line for tool, one arg per line
