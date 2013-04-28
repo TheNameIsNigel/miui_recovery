@@ -79,6 +79,22 @@ static STATUS log_menu_show(struct _menuUnit* p)
     return MENU_BACK;
 }
 
+struct _menuUnit* prefs_ui_init()
+{
+    struct _menuUnit *p = common_ui_init();
+    return_null_if_fail(p != NULL);
+    menuUnit_set_name(p, "Preferences");
+    menuUnit_set_title(p, "Preferences");
+    menuUnit_set_icon(p, "@tool");
+    assert_if_fail(menuNode_init(p) != NULL);
+    // something
+    struct _menuUnit *temp = common_ui_init();
+    //set brightness
+    temp = brightness_ui_init();
+    assert_if_fail(menuNode_add(p, temp) == RET_OK);
+    return p;
+}
+
 struct _menuUnit* brightness_ui_init()
 {
 	struct _menuUnit *p = common_ui_init();
@@ -141,8 +157,8 @@ struct _menuUnit* tool_ui_init()
     menuUnit_set_icon(temp, "@tool.permission");
     menuUnit_set_show(temp, &permission_menu_show);
     assert_if_fail(menuNode_add(p, temp) == RET_OK);
-    //set brightness
-    temp = brightness_ui_init();
+    //prefs
+    temp = prefs_ui_init();
     assert_if_fail(menuNode_add(p, temp) == RET_OK);
     return p;
 }
