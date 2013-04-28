@@ -10,6 +10,11 @@
 #include "../../../miui_intent.h"
 #include "../libs/miui_screen.h"
 
+static STATUS nothing(struct _menuUnit *p)
+{
+    return MENU_BACK;
+}
+
 static STATUS brightness_menu_show(struct _menuUnit *p)
 {
 	switch(p->result) {
