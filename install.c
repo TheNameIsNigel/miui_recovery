@@ -34,8 +34,21 @@
 #include "verifier.h"
 #include "miui/src/miui.h"
 
+#include "miui/src/libs/iniparser/iniparser.h"
+
 #define ASSUMED_UPDATE_BINARY_NAME  "META-INF/com/google/android/update-binary"
 #define PUBLIC_KEYS_FILE "/res/keys"
+
+dictionary * ini;
+
+int load_cotsettings()
+{
+    ini = iniparser_load("/sdcard/cotrecovery/settings.ini");
+    if (ini==NULL)
+        return 1;
+        
+    return 0;
+}
 
 // If the package contains an update binary, extract it and run it.
 static int
@@ -277,6 +290,32 @@ really_install_package(const char *path, int* wipe_cache)
     ui_print("Opening update package...\n");
 
     int err;
+    
+    int currstatus;
+    if (1==load_cotsettings()) {
+        return INSTALL_CORRUPT;
+    }
+    
+    currstatus = iniparser_getboolean(ini, "zipflash:signaturecheck", -1);
+    
+    if (currstatus == 1) {
+        int numKeys;
+        RSAPublicKey* loadedKeys = load_keys(PUBLIC_KEYS_FILE, &numKeys);
+        if (loadedKeys == NULL) {
+            LOGE("Failed to load keys\n");
+            return INSTALL_CORRUPT;
+        }
+        LOGI("%d key(s) loaded from %s\n", numKeys, PUBLIC_KEYS_FILE);
+        
+        ui_print("Verifying update package...\n");
+        err = verify_file(path, loadedKeys, numKeys);
+        free(loadedKeys);
+        LOGI("verify_file returned %d\n", err);
+        if (err != VERIFY_SUCCESS) {
+            // we will tie in to the UI lib here for a "really install this?" dialog
+            return INSTALL_CORRUPT;
+        }
+    }
     /* Try to open the package.
      */
     ZipArchive zip;
