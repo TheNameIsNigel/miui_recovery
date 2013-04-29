@@ -55,7 +55,7 @@ static STATUS wipeprompt_menu_show(struct _menuUnit* p)
 
 static STATUS backupprompt_menu_show(struct _menuUnit* p)
 {
-    if (RET_YES == miui_confirm(5, ->name, ->desc, p->icon, "Enable", "Disable")) {
+    if (RET_YES == miui_confirm(5, p->name, p->desc, p->icon, "Enable", "Disable")) {
         // do nothing here
     }
     return MENU_BACK;
@@ -63,7 +63,7 @@ static STATUS backupprompt_menu_show(struct _menuUnit* p)
 
 static STATUS sigcheck_menu_show(struct _menuUnit* p)
 {
-    if (RET_YES == miui_confirm(5, ->name, ->desc, p->icon, "Enable", "Disable")) {
+    if (RET_YES == miui_confirm(5, p->name, p->desc, p->icon, "Enable", "Disable")) {
         // do nothing here
     }
     return MENU_BACK;
