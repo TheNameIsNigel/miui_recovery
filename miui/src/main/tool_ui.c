@@ -135,6 +135,58 @@ struct _menuUnit* brightness_ui_init()
 	return p;
 }
 
+/* ORS SETTINGS BEGIN */
+struct _menuUnit* forcereboot_ui_init()
+{
+    struct _menuUnit *p = common_ui_init();
+    return_null_if_fail(p != NULL);
+    menuUnit_set_name(p, "Forced Reboots");
+    menuUnit_set_title(p, "Forced Reboots");
+    menuUnit_set_icon(p, "@tool");
+    assert_if_fail(menuNode_init(p) != NULL);
+    struct _menuUnit *temp = common_ui_init();
+    menuUnit_set_name(temp, "Enable");
+    menuUnit_set_show(temp, &nothing);
+    temp = common_ui_init();
+    menuUnit_set_name(temp, "Disable");
+    menuUnit_set_show(temp, &nothing);
+    return p;
+}
+
+struct _menuUnit* wipeprompt_ui_init()
+{
+    struct _menuUnit *p = common_ui_init();
+    return_null_if_fail(p != NULL);
+    menuUnit_set_name(p, "Wipe Prompt");
+    menuUnit_set_title(p, "Wipe Prompt");
+    menuUnit_set_icon(p, "@tool");
+    assert_if_fail(menuNode_init(p) != NULL);
+    struct _menuUnit *temp = common_ui_init();
+    menuUnit_set_name(temp, "Enable");
+    menuUnit_set_show(temp, &nothing);
+    temp = common_ui_init();
+    menuUnit_set_name(temp, "Disable");
+    menuUnit_set_show(temp, &nothing);
+    return p;
+}
+
+struct _menuUnit* ors_ui_init()
+{
+    struct _menuUnit *p = common_ui_init();
+    return_null_if_fail(p != NULL);
+    menuUnit_set_name(p, "OpenRecoveryScript");
+    menuUnit_set_title(p, "OpenRecoveryScript");
+    menuUnit_set_icon(p, "@tool");
+    assert_if_fail(menuNode_init(p) != NULL);
+    struct _menuUnit *temp = forcereboot_ui_init();
+    assert_if_fail(menuNode_add(p, temp) == RET_OK);
+    temp = wipeprompt_ui_init();
+    assert_if_fail(menuNode_add(p, temp) == RET_OK);
+    return p;
+}
+/* ORS SETTINGS END */
+
+/* PREFS MENU BEGIN */
 struct _menuUnit* prefs_ui_init()
 {
     struct _menuUnit *p = common_ui_init();
@@ -149,8 +201,12 @@ struct _menuUnit* prefs_ui_init()
     //set brightness
     temp = brightness_ui_init();
     assert_if_fail(menuNode_add(p, temp) == RET_OK);
+    // ors settings
+    temp = ors_ui_init();
+    assert_if_fail(menuNode_add(p, temp) == RET_OK);
     return p;
 }
+/* PREFS MENU END */
 
 struct _menuUnit* tool_ui_init()
 {
@@ -160,7 +216,7 @@ struct _menuUnit* tool_ui_init()
     menuUnit_set_title(p, "<~tool.title>");
     menuUnit_set_icon(p, "@tool");
     assert_if_fail(menuNode_init(p) != NULL);
-    //batarry wipe
+    //battery wipe
     struct _menuUnit *temp = common_ui_init();
     menuUnit_set_name(temp, "<~tool.battary.name>"); 
     menuUnit_set_icon(temp, "@tool.battery");
