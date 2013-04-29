@@ -22,6 +22,8 @@
  */
 #include "../miui_inter.h"
 #include "../miui.h"
+#include "../libs/iniparser/iniparser.h"
+#include "../libs/iniparser/dictionary.h"
 
 
 struct _menuUnit *g_main_menu;//main menu

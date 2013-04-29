@@ -48,6 +48,8 @@ libmiui_common_src_files :=libs/png/png.c \
     src/libs/miui_languages.c \
     src/libs/miui_libs.c \
     src/libs/miui_png.c \
+    src/libs/iniparser/dictionary.c \
+    src/libs/iniparser/iniparser.c \
     src/controls/miui_control_button.c \
     src/controls/miui_control_check.c \
     src/controls/miui_control_optbox.c \

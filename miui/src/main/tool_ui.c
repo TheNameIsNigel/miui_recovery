@@ -10,6 +10,9 @@
 #include "../../../miui_intent.h"
 #include "../libs/miui_screen.h"
 
+#include "../libs/iniparser/iniparser.h"
+#include "../libs/iniparser/dictionary.h"
+
 static STATUS nothing(struct _menuUnit *p)
 {
     return MENU_BACK;

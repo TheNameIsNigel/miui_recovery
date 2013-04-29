@@ -594,6 +594,7 @@ char * miui_getprop(char *file, char *key) {
   result = miui_parseprop(path,key);
   return result;
 }
+
 char * miui_gettmpprop(char *file, char *key) {
   return_null_if_fail(file != NULL); 
   return_null_if_fail(key != NULL); 
