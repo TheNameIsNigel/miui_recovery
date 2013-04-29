@@ -39,7 +39,16 @@ static STATUS brightness_menu_show(struct _menuUnit *p)
 
 static STATUS forcereboot_menu_show(struct _menuUnit* p)
 {
-    if (RET_YES == miui_confirm(5, p->name, p->desc, p->icon, "Enable", "Disable")) {
+    // TODO: detect current status (for now hard-code as disabled)
+    int currstatus = 0;
+    char statusdlg;
+    
+    if (currstatus == 0)
+        statusdlg = "Forced reboots are currently disabled.";
+    else
+        statusdlg = "Forced reboots are currently enabled.";
+    
+    if (RET_YES == miui_confirm(5, p->name, statusdlg, p->icon, "Enable", "Disable")) {
         // do nothing here
     }
     return MENU_BACK;
@@ -47,7 +56,16 @@ static STATUS forcereboot_menu_show(struct _menuUnit* p)
 
 static STATUS wipeprompt_menu_show(struct _menuUnit* p)
 {
-    if (RET_YES == miui_confirm(5, p->name, p->desc, p->icon, "Enable", "Disable")) {
+    // TODO: detect current status (for now hard-code as disabled)
+    int currstatus = 0;
+    char statusdlg;
+    
+    if (currstatus == 0)
+        statusdlg = "Wipe prompts are currently disabled.";
+    else
+        statusdlg = "Wipe prompts are currently enabled.";
+    
+    if (RET_YES == miui_confirm(5, p->name, statusdlg, p->icon, "Enable", "Disable")) {
         // do nothing here
     }
     return MENU_BACK;
@@ -55,7 +73,16 @@ static STATUS wipeprompt_menu_show(struct _menuUnit* p)
 
 static STATUS backupprompt_menu_show(struct _menuUnit* p)
 {
-    if (RET_YES == miui_confirm(5, p->name, p->desc, p->icon, "Enable", "Disable")) {
+    // TODO: detect current status (for now hard-code as disabled)
+    int currstatus = 0;
+    char statusdlg;
+    
+    if (currstatus == 0)
+        statusdlg = "Backup prompts are currently disabled.";
+    else
+        statusdlg = "Backup prompts are currently enabled.";
+    
+    if (RET_YES == miui_confirm(5, p->name, statusdlg, p->icon, "Enable", "Disable")) {
         // do nothing here
     }
     return MENU_BACK;
@@ -63,7 +90,16 @@ static STATUS backupprompt_menu_show(struct _menuUnit* p)
 
 static STATUS sigcheck_menu_show(struct _menuUnit* p)
 {
-    if (RET_YES == miui_confirm(5, p->name, p->desc, p->icon, "Enable", "Disable")) {
+    // TODO: detect current status (for now hard-code as disabled)
+    int currstatus = 0;
+    char statusdlg;
+    
+    if (currstatus == 0)
+        statusdlg = "Signature checks are currently disabled.";
+    else
+        statusdlg = "Signature checks are currently enabled.";
+    
+    if (RET_YES == miui_confirm(5, p->name, statusdlg, p->icon, "Enable", "Disable")) {
         // do nothing here
     }
     return MENU_BACK;
