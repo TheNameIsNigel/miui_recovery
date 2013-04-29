@@ -37,6 +37,22 @@ static STATUS brightness_menu_show(struct _menuUnit *p)
 	return MENU_BACK;
 }
 
+static STATUS forcereboot_menu_show(struct _menuUnit* p)
+{
+    if (RET_YES == miui_confirm(5, p->name, p->desc, p->icon, "Enable", "Disable")) {
+        // do nothing here
+    }
+    return MENU_BACK;
+}
+
+static STATUS wipeprompt_menu_show(struct _menuUnit* p)
+{
+    if (RET_YES == miui_confirm(5, p->name, p->desc, p->icon, "Enable", "Disable")) {
+        // do nothing here
+    }
+    return MENU_BACK;
+}
+
 static STATUS battary_menu_show(struct _menuUnit* p)
 {
     if (RET_YES == miui_confirm(3, p->name, p->desc, p->icon)) {
@@ -136,40 +152,6 @@ struct _menuUnit* brightness_ui_init()
 }
 
 /* ORS SETTINGS BEGIN */
-struct _menuUnit* forcereboot_ui_init()
-{
-    struct _menuUnit *p = common_ui_init();
-    return_null_if_fail(p != NULL);
-    menuUnit_set_name(p, "Forced Reboots");
-    menuUnit_set_title(p, "Forced Reboots");
-    menuUnit_set_icon(p, "@tool");
-    assert_if_fail(menuNode_init(p) != NULL);
-    struct _menuUnit *temp = common_ui_init();
-    menuUnit_set_name(temp, "Enable");
-    menuUnit_set_show(temp, &nothing);
-    temp = common_ui_init();
-    menuUnit_set_name(temp, "Disable");
-    menuUnit_set_show(temp, &nothing);
-    return p;
-}
-
-struct _menuUnit* wipeprompt_ui_init()
-{
-    struct _menuUnit *p = common_ui_init();
-    return_null_if_fail(p != NULL);
-    menuUnit_set_name(p, "Wipe Prompt");
-    menuUnit_set_title(p, "Wipe Prompt");
-    menuUnit_set_icon(p, "@tool");
-    assert_if_fail(menuNode_init(p) != NULL);
-    struct _menuUnit *temp = common_ui_init();
-    menuUnit_set_name(temp, "Enable");
-    menuUnit_set_show(temp, &nothing);
-    temp = common_ui_init();
-    menuUnit_set_name(temp, "Disable");
-    menuUnit_set_show(temp, &nothing);
-    return p;
-}
-
 struct _menuUnit* ors_ui_init()
 {
     struct _menuUnit *p = common_ui_init();
@@ -178,9 +160,17 @@ struct _menuUnit* ors_ui_init()
     menuUnit_set_title(p, "OpenRecoveryScript");
     menuUnit_set_icon(p, "@tool");
     assert_if_fail(menuNode_init(p) != NULL);
-    struct _menuUnit *temp = forcereboot_ui_init();
+    
+    struct _menuUnit *temp = common_ui_init();
+    menuUnit_set_name(temp, "Force Reboots"); 
+    menuUnit_set_icon(temp, "@tool");
+    menuUnit_set_show(temp, &forcereboot_menu_show);
     assert_if_fail(menuNode_add(p, temp) == RET_OK);
-    temp = wipeprompt_ui_init();
+    
+    temp = common_ui_init();
+    menuUnit_set_name(temp, "Wipe Prompt"); 
+    menuUnit_set_icon(temp, "@tool");
+    menuUnit_set_show(temp, &wipeprompt_menu_show);
     assert_if_fail(menuNode_add(p, temp) == RET_OK);
     return p;
 }
