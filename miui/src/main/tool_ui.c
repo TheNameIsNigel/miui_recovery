@@ -41,7 +41,7 @@ static STATUS forcereboot_menu_show(struct _menuUnit* p)
 {
     // TODO: detect current status (for now hard-code as disabled)
     int currstatus = 0;
-    char statusdlg;
+    char *statusdlg;
     
     if (currstatus == 0)
         statusdlg = "Forced reboots are currently disabled.";
@@ -58,7 +58,7 @@ static STATUS wipeprompt_menu_show(struct _menuUnit* p)
 {
     // TODO: detect current status (for now hard-code as disabled)
     int currstatus = 0;
-    char statusdlg;
+    char *statusdlg;
     
     if (currstatus == 0)
         statusdlg = "Wipe prompts are currently disabled.";
@@ -75,7 +75,7 @@ static STATUS backupprompt_menu_show(struct _menuUnit* p)
 {
     // TODO: detect current status (for now hard-code as disabled)
     int currstatus = 0;
-    char statusdlg;
+    char *statusdlg;
     
     if (currstatus == 0)
         statusdlg = "Backup prompts are currently disabled.";
@@ -92,7 +92,7 @@ static STATUS sigcheck_menu_show(struct _menuUnit* p)
 {
     // TODO: detect current status (for now hard-code as disabled)
     int currstatus = 0;
-    char statusdlg;
+    char *statusdlg;
     
     if (currstatus == 0)
         statusdlg = "Signature checks are currently disabled.";
