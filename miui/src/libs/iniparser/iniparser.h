@@ -79,7 +79,7 @@ char * iniparser_getsecname(dictionary * d, int n);
  */
 /*--------------------------------------------------------------------------*/
 
-void iniparser_dump_ini(dictionary * d, FILE * f);
+void iniparser_dump_ini(dictionary * d, char *filename);
 
 /*-------------------------------------------------------------------------*/
 /**

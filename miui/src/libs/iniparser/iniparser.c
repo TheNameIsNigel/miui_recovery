@@ -203,13 +203,17 @@ void iniparser_dump(dictionary * d, FILE * f)
   It is Ok to specify @c stderr or @c stdout as output files.
  */
 /*--------------------------------------------------------------------------*/
-void iniparser_dump_ini(dictionary * d, FILE * f)
+void iniparser_dump_ini(dictionary * d, char *filename)
 {
     int     i ;
     int     nsec ;
     char *  secname ;
+    FILE *f;
+    f = fopen(filename, "w");
 
     if (d==NULL || f==NULL) return ;
+    
+    
 
     nsec = iniparser_getnsec(d);
     if (nsec<1) {
@@ -226,6 +230,7 @@ void iniparser_dump_ini(dictionary * d, FILE * f)
         iniparser_dumpsection_ini(d, secname, f) ;
     }
     fprintf(f, "\n");
+    fclose(f);
     return ;
 }
 

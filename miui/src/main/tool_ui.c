@@ -11,7 +11,27 @@
 #include "../libs/miui_screen.h"
 
 #include "../libs/iniparser/iniparser.h"
-#include "../libs/iniparser/dictionary.h"
+
+dictionary * ini;
+
+int load_settings()
+{
+    miuiIntent_send(INTENT_MOUNT, 1, "/sdcard");
+    miuiIntent_send(INTENT_SYSTEM, 1, "mkdir -p /sdcard/cotrecovery");
+    ini = iniparser_load("/sdcard/cotrecovery/settings.ini");
+    if (ini==NULL)
+        return 1;
+    
+    return 0;
+}
+
+void write_settings()
+{
+    char *ini_name;
+    ini_name = "/sdcard/cotrecovery/settings.ini";
+    iniparser_dump_ini(ini, ini_name);
+    iniparser_freedict(ini);
+}
 
 static STATUS nothing(struct _menuUnit *p)
 {
@@ -42,68 +62,128 @@ static STATUS brightness_menu_show(struct _menuUnit *p)
 
 static STATUS forcereboot_menu_show(struct _menuUnit* p)
 {
-    // TODO: detect current status (for now hard-code as disabled)
-    int currstatus = 0;
+    int currstatus;
+    if (1==load_settings()) {
+        return MENU_BACK;
+    }
+        
+    currstatus = iniparser_getboolean(ini, "ors:forcereboots", -1);
     char *statusdlg;
+    char *btntext;
     
-    if (currstatus == 0)
+    if (currstatus == 0) {
         statusdlg = "Forced reboots are currently disabled.";
-    else
+        btntext = "Enable";
+    } else if (currstatus == 1) {
         statusdlg = "Forced reboots are currently enabled.";
+        btntext = "Disable";
+    }
     
-    if (RET_YES == miui_confirm(5, p->name, statusdlg, p->icon, "Enable", "Disable")) {
-        // do nothing here
+    if (RET_YES == miui_confirm(5, p->name, statusdlg, p->icon, btntext, "Cancel")) {
+        if (currstatus == 0) {
+            // enable ors force reboots
+            iniparser_set(ini, "ors:forcereboots", "1");
+        } else if (currstatus == 1) {
+            // disable ors force reboots
+            iniparser_set(ini, "ors:forcereboots", "0");
+        }
+        write_settings();
     }
     return MENU_BACK;
 }
 
 static STATUS wipeprompt_menu_show(struct _menuUnit* p)
 {
-    // TODO: detect current status (for now hard-code as disabled)
-    int currstatus = 0;
+    int currstatus;
+    if (1==load_settings()) {
+        return MENU_BACK;
+    }
+    
+    currstatus = iniparser_getboolean(ini, "ors:wipeprompt", -1);
     char *statusdlg;
+    char *btntext;
     
-    if (currstatus == 0)
+    if (currstatus == 0) {
         statusdlg = "Wipe prompts are currently disabled.";
-    else
+        btntext = "Enable";
+    } else {
         statusdlg = "Wipe prompts are currently enabled.";
+        btntext = "Disable";
+    }
     
-    if (RET_YES == miui_confirm(5, p->name, statusdlg, p->icon, "Enable", "Disable")) {
-        // do nothing here
+    if (RET_YES == miui_confirm(5, p->name, statusdlg, p->icon, btntext, "Cancel")) {
+        if (currstatus == 0) {
+            // enable ors wipe prompt
+            iniparser_set(ini, "ors:wipeprompt", "1");
+        } else if (currstatus == 1) {
+            // disable ors wipe prompt
+            iniparser_set(ini, "ors:wipeprompt", "0");
+        }
+        write_settings();
     }
     return MENU_BACK;
 }
 
 static STATUS backupprompt_menu_show(struct _menuUnit* p)
 {
-    // TODO: detect current status (for now hard-code as disabled)
-    int currstatus = 0;
+    int currstatus;
+    if (1==load_settings()) {
+        return MENU_BACK;
+    }
+    
+    currstatus = iniparser_getboolean(ini, "zipflash:backupprompt", -1);
     char *statusdlg;
+    char *btntext;
     
-    if (currstatus == 0)
+    if (currstatus == 0) {
         statusdlg = "Backup prompts are currently disabled.";
-    else
+        btntext = "Enable";
+    } else {
         statusdlg = "Backup prompts are currently enabled.";
+        btntext = "Disable";
+    }
     
-    if (RET_YES == miui_confirm(5, p->name, statusdlg, p->icon, "Enable", "Disable")) {
-        // do nothing here
+    if (RET_YES == miui_confirm(5, p->name, statusdlg, p->icon, btntext, "Cancel")) {
+        if (currstatus == 0) {
+            // enable ors wipe prompt
+            iniparser_set(ini, "zipflash:backupprompt", "1");
+        } else if (currstatus == 1) {
+            // disable ors wipe prompt
+            iniparser_set(ini, "zipflash:backupprompt", "0");
+        }
+        write_settings();
     }
     return MENU_BACK;
 }
 
 static STATUS sigcheck_menu_show(struct _menuUnit* p)
 {
-    // TODO: detect current status (for now hard-code as disabled)
-    int currstatus = 0;
+    int currstatus;
+    if (1==load_settings()) {
+        return MENU_BACK;
+    }
+    
+    currstatus = iniparser_getboolean(ini, "zipflash:signaturecheck", -1);
     char *statusdlg;
+    char *btntext;
     
-    if (currstatus == 0)
+    if (currstatus == 0) {
         statusdlg = "Signature checks are currently disabled.";
-    else
+        btntext = "Enable";
+    } else {
         statusdlg = "Signature checks are currently enabled.";
+        btntext = "Disable";
+    }
     
-    if (RET_YES == miui_confirm(5, p->name, statusdlg, p->icon, "Enable", "Disable")) {
-        // do nothing here
+    if (RET_YES == miui_confirm(5, p->name, statusdlg, p->icon, btntext, "Cancel")) {
+        if (currstatus == 0) {
+            // enable ors wipe prompt
+            iniparser_set(ini, "zipflash:signaturecheck", "1");
+        } else if (currstatus == 1) {
+            // disable ors wipe prompt
+            iniparser_set(ini, "zipflash:signaturecheck", "0");
+        }
+        write_settings();
     }
     return MENU_BACK;
 }
@@ -236,8 +316,8 @@ struct _menuUnit* nand_ui_init()
 {
     struct _menuUnit *p = common_ui_init();
     return_null_if_fail(p != NULL);
-    menuUnit_set_name(p, "Nandroid");
-    menuUnit_set_title(p, "Nandroid");
+    menuUnit_set_name(p, "ZIP Flashing");
+    menuUnit_set_title(p, "ZIP Flashing");
     menuUnit_set_icon(p, "@tool");
     assert_if_fail(menuNode_init(p) != NULL);
     
