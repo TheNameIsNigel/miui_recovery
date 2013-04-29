@@ -237,6 +237,10 @@ static int nandroid_backup_partition(const char* backup_path, const char* root) 
     if (vol == NULL || vol->fs_type == NULL)
         return NULL;
 
+    if (ensure_path_mounted(backup_path) != 0) {
+        return print_and_error("Can't mount backup path.\n");
+    }
+    
     // see if we need a raw backup (mtd)
     char tmp[PATH_MAX];
     sprintf(tmp, "mkdir -p %s", backup_path);
@@ -354,13 +358,22 @@ int nandroid_backup(const char* backup_path)
             return print_and_error("Error while dumping WiMAX image!\n");
     }
 
+    if (ensure_path_mounted("/system") != 0) {
+        return print_and_error("Can't mount backup path.\n");
+    }
     if (0 != (ret = nandroid_backup_partition(backup_path, "/system")))
         return ret;
 
+    if (ensure_path_mounted("/data") != 0) {
+        return print_and_error("Can't mount backup path.\n");
+    }
     if (0 != (ret = nandroid_backup_partition(backup_path, "/data")))
         return ret;
 
     if (has_datadata()) {
+        if (ensure_path_mounted("/datadata") != 0) {
+            return print_and_error("Can't mount backup path.\n");
+        }
         if (0 != (ret = nandroid_backup_partition(backup_path, "/datadata")))
             return ret;
     }
@@ -375,6 +388,9 @@ int nandroid_backup(const char* backup_path)
             return ret;
     }
 
+    if (ensure_path_mounted("/cache") != 0) {
+        return print_and_error("Can't mount backup path.\n");
+    }
     if (0 != (ret = nandroid_backup_partition_extended(backup_path, "/cache", 0)))
         return ret;
 

@@ -297,6 +297,7 @@ really_install_package(const char *path, int* wipe_cache)
     }
     
     currstatus = iniparser_getboolean(ini, "zipflash:signaturecheck", -1);
+    iniparser_freedict(ini);
     
     if (currstatus == 1) {
         int numKeys;
@@ -312,7 +313,7 @@ really_install_package(const char *path, int* wipe_cache)
         free(loadedKeys);
         LOGI("verify_file returned %d\n", err);
         if (err != VERIFY_SUCCESS) {
-            // we will tie in to the UI lib here for a "really install this?" dialog
+            LOGE("Signature verification failed!\n");
             return INSTALL_CORRUPT;
         }
     }
