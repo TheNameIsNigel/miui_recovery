@@ -216,9 +216,10 @@ int format_unknown_device(const char *device, const char* path, const char *fs_t
  * possible return would be "/sdcard/cotrecovery" */
 void nandroid_get_assigned_backup_path(const char* backup_path)
 {
-	/* JB backport (we're leaving out other_sd for now but it could probably be implemented)
-	 * for now assume sdcard for root_path. */
-    char root_path[PATH_MAX] = "/sdcard";
+	/* Will be pulling in the proper handling for multi-sdcard and normal
+	 * sdcard, currently I'm having an issue getting files on external sdcard
+	 * to show up visibly on emmc devices (at all in NG or 2.y...) */
+    char root_path[PATH_MAX] = "/emmc";
 //    nandroid_get_root_backup_path(root_path, other_sd);
     char tmp[PATH_MAX];
     struct stat st;

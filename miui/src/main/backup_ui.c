@@ -193,7 +193,10 @@ static STATUS _show_backup_dir(char *path, int type)
 
 static STATUS backup_delete_show(menuUnit* p) {
 	p_current = p;
-	miuiIntent_send(INTENT_MOUNT, 1, "/sdcard");
+	/* Will be pulling in the proper handling for multi-sdcard and normal
+	 * sdcard, currently I'm having an issue getting files on external sdcard
+	 * to show up visibly on emmc devices (at all in NG or 2.y...) */
+	miuiIntent_send(INTENT_MOUNT, 1, "/emmc");
 	return_val_if_fail(miuiIntent_result_get_int() == 0, MENU_BACK);
 	char backup_path[PATH_MAX];
 	switch(p->result) {
@@ -211,7 +214,10 @@ static STATUS backup_delete_show(menuUnit* p) {
 static STATUS restore_child_show(menuUnit* p)
 {
     p_current = p;
-    miuiIntent_send(INTENT_MOUNT, 1, "/sdcard");
+	/* Will be pulling in the proper handling for multi-sdcard and normal
+	 * sdcard, currently I'm having an issue getting files on external sdcard
+	 * to show up visibly on emmc devices (at all in NG or 2.y...) */
+    miuiIntent_send(INTENT_MOUNT, 1, "/emmc");
     return_val_if_fail(miuiIntent_result_get_int() == 0, MENU_BACK);
     char backup_path[PATH_MAX];
     switch(p->result) {
@@ -246,7 +252,10 @@ static STATUS restore_child_show(menuUnit* p)
 static STATUS backup_child_show(menuUnit* p)
 {
     p_current = p;
-    miuiIntent_send(INTENT_MOUNT, 1, "/sdcard");
+	/* Will be pulling in the proper handling for multi-sdcard and normal
+	 * sdcard, currently I'm having an issue getting files on external sdcard
+	 * to show up visibly on emmc devices (at all in NG or 2.y...) */
+    miuiIntent_send(INTENT_MOUNT, 1, "/emmc");
     char backup_path[PATH_MAX];
     static time_t timep;
     static struct tm *time_tm;
