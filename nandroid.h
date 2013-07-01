@@ -15,4 +15,9 @@ void nandroid_get_assigned_backup_path(const char* backup_path);
 extern const char *DEFAULT_BACKUP_PATH;
 extern const char *USER_DEFINED_BACKUP_MARKER;
 
+/* These really should go somewhere else but are only utilized in nandroid and
+ * roots. */
+int format_unknown_device(const char *device, const char* path, const char *fs_type);
+int format_device(const char *device, const char *path, const char *fs_type);
+
 #endif
