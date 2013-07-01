@@ -17,7 +17,7 @@
 #define dword             unsigned int
 #define word              unsigned short
 #define color             unsigned short
-typedef int u32;
+typedef unsigned int u32;
 
 //##                                                   ##//
 //##               LIST OF DEFINITIONS                 ##//

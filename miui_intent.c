@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (c) 2013, Project Open Cannibal
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -9,7 +10,9 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  * See the License for the specific language governing permissions and * limitations under the License.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,8 +59,6 @@ int miuiIntent_register(intentType type, intentFunction function)
     return 0;
 }
 
-//miui_send intent args must >= 1,
-
 intentResult* miuiIntent_send(intentType type, int argc, char *format, ...)
 {
     int i = 0;
@@ -92,6 +93,7 @@ char* miuiIntent_result_get_string()
 {
     return pret->result;
 }
+
 int miuiIntent_result_get_int()
 {
     return pret->ret;

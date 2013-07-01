@@ -675,7 +675,6 @@ main(int argc, char **argv) {
     freopen(TEMPORARY_LOG_FILE, "a", stdout); setbuf(stdout, NULL);
     freopen(TEMPORARY_LOG_FILE, "a", stderr); setbuf(stderr, NULL);
     printf("Starting recovery on %s", ctime(&start));
-    //miuiIntent init
     miuiIntent_init(10);
     miuiIntent_register(INTENT_MOUNT, &intent_mount);
     miuiIntent_register(INTENT_ISMOUNT, &intent_ismount);
