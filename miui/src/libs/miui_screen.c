@@ -22,7 +22,7 @@
  * 	Static bind property on most methods; the following methods can be invoked
  * 	externally:
  * 
- * 		int screen_set_brightness(int brightness)
+ * 		int screen_set_brightness(const char* brightness)
  * 		int screen_set_interval(int interval)
  * 
  * 	The following methods were already visible but there should be no need to
@@ -58,7 +58,8 @@ static int screen_set_time(time_t time) {
 	return 0;
 }
 
-int screen_set_brightness(int brightness) {
+int screen_set_brightness(const char* brightness)
+{
 	pthread_mutex_lock(&mutex_screen);
 	/* Instead of flooding the recovery log check a status and only run this the
 	 * one time anyway. */

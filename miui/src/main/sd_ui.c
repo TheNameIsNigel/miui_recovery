@@ -9,6 +9,11 @@
 #include "../miui_inter.h"
 #include "../miui.h"
 #include "../../../miui_intent.h"
+
+#include "../libs/iniparser/iniparser.h"
+
+dictionary * ini;
+
 /*
  *_sd_show_dir show file system on screen
  *return MENU_BACK when pree backmenu
@@ -18,11 +23,33 @@
 //callback function , success return 0, non-zero fail
 int file_install(char *file_name, int file_len, void *data)
 {
+    char path_name[PATH_MAX];
+    static time_t timep;
+    static struct tm *time_tm;
+    time(&timep);
+    time_tm = gmtime(&timep);
     return_val_if_fail(file_name != NULL, RET_FAIL);
     return_val_if_fail(strlen(file_name) <= file_len, RET_INVALID_ARG);
     return_val_if_fail(data != NULL, RET_FAIL);
     struct _menuUnit *p = (pmenuUnit)data;
     if (RET_YES == miui_confirm(3, p->name, p->desc, p->icon)) {
+        int currstatus;
+        if (1==load_cotsettings()) {
+            return -1;
+        }
+        
+        currstatus = iniparser_getboolean(ini, "zipflash:backupprompt", -1);
+        iniparser_freedict(ini);
+        
+        if (currstatus == 1) {
+            if (RET_YES == miui_confirm(3, p->name, "Would you like to make a backup first?", p->icon)) {
+                snprintf(path_name,PATH_MAX, "%s/backup/backup/%02d%02d%02d-%02d%02d",
+                        RECOVERY_PATH, time_tm->tm_year,
+                        time_tm->tm_mon + 1, time_tm->tm_mday, time_tm->tm_hour, time_tm->tm_min);
+                miui_busy_process();
+                miuiIntent_send(INTENT_BACKUP, 1, path_name);
+            }
+        }
         miuiIntent_send(INTENT_INSTALL, 3, file_name, "0", "1");
         return 0;
     }

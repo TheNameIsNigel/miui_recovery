@@ -33,8 +33,13 @@ char* MENU_ITEMS[] = { "reboot system now",
                        "apply update from cache",
                        NULL };
 
+#ifdef BOARD_LCD_BRIGHTNESS_FILE
+char const*const LCD_FILE
+		= BOARD_LCD_BRIGHTNESS_FILE;
+#else
 char const*const LCD_FILE
         = "/sys/class/leds/lcd-backlight/brightness";
+#endif
 
 static int write_int(char const* path, int value) {
     int fd;

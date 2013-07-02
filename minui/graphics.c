@@ -29,6 +29,7 @@
 #include <linux/kd.h>
 
 #include <pixelflinger/pixelflinger.h>
+#include <cutils/memory.h>
 
 #include "font_10x18.h"
 #include "minui.h"

@@ -16,7 +16,7 @@
 #ifndef _UI_SCREEN_H_
 #define _UI_SCREEN_H_
 
-int screen_set_brightness(int brightness);
+int screen_set_brightness(const char* brightness);
 int screen_set_interval(int interval);
 
 /* The following methods were already visible in the C file but should not be

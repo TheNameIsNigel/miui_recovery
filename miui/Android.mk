@@ -48,6 +48,8 @@ libmiui_common_src_files :=libs/png/png.c \
     src/libs/miui_languages.c \
     src/libs/miui_libs.c \
     src/libs/miui_png.c \
+    src/libs/iniparser/dictionary.c \
+    src/libs/iniparser/iniparser.c \
     src/controls/miui_control_button.c \
     src/controls/miui_control_check.c \
     src/controls/miui_control_optbox.c \
@@ -77,6 +79,14 @@ LOCAL_SRC_FILES := \
     $(libmiui_common_src_files)
 LOCAL_C_INCLUDES += $(libmiui_common_includes)
 LOCAL_CFLAGS := $(MYDEFINE_CFLAGS)
+
+BOARD_UILIB_DEFINES := BOARD_LCD_BRIGHTNESS_FILE
+
+$(foreach board_define,$(BOARD_UILIB_DEFINES), \
+	$(if $($(board_define)), \
+		$(eval LOCAL_CFLAGS += -D$(board_define)=\"$($(board_define))\") \
+	) \
+)
 
 LOCAL_STATIC_LIBRARIES += libc libm
 LOCAL_MODULE := libmiui

@@ -1,4 +1,5 @@
-/*
+/**
+ * Copyright (c) 2013, Project Open Cannibal
  * Copyright (C) 2012 xiaomi MIUI ( http://www.xiaomi.com/ )
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -594,6 +595,7 @@ char * miui_getprop(char *file, char *key) {
   result = miui_parseprop(path,key);
   return result;
 }
+
 char * miui_gettmpprop(char *file, char *key) {
   return_null_if_fail(file != NULL); 
   return_null_if_fail(key != NULL); 
