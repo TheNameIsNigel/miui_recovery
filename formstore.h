@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Format and Storage ;)
 #ifndef _FORMSTORE_H_
 #define _FORMSTORE_H_
 
@@ -21,6 +20,7 @@ extern long tmplog_offset;
 
 int volume_main(int argc, char **argv);
 int is_path_mounted(const char* path);
+int has_datadata();
 
 int erase_volume(const char *volume);
 

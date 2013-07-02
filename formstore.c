@@ -64,6 +64,11 @@ int is_path_mounted(const char* path) {
     return 0;
 }
 
+int has_datadata() {
+    Volume *vol = volume_for_path("/datadata");
+    return vol != NULL;
+}
+
 int erase_volume(const char *volume) {
     ui_set_background(BACKGROUND_ICON_INSTALLING);
     ui_show_indeterminate_progress();

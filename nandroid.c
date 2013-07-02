@@ -321,11 +321,6 @@ int nandroid_backup_partition(const char* backup_path, const char* root) {
     return nandroid_backup_partition_extended(backup_path, root, 1);
 }
 
-int has_datadata() {
-    Volume *vol = volume_for_path("/datadata");
-    return vol != NULL;
-}
-
 int recalc_sdcard_space(const char* backup_path) {
 	struct statfs s;
 	int ret;
