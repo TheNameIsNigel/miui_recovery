@@ -45,11 +45,6 @@ Volume* get_device_volumes() {
     return device_volumes;
 }
 
-int volume_main(int argc, char **argv) {
-    load_volume_table();
-    return 0;
-}
-
 static int is_null(const char* sz) {
     if (sz == NULL)
         return 1;
@@ -186,32 +181,6 @@ Volume* volume_for_path(const char* path) {
         }
     }
     return NULL;
-}
-
-int is_path_mounted(const char* path) {
-    Volume* v = volume_for_path(path);
-    if (v == NULL) {
-        return 0;
-    }
-    if (strcmp(v->fs_type, "ramdisk") == 0) {
-        // the ramdisk is always mounted.
-        return 1;
-    }
-
-    int result;
-    result = scan_mounted_volumes();
-    if (result < 0) {
-        LOGE("failed to scan mounted volumes\n");
-        return 0;
-    }
-
-    const MountedVolume* mv =
-        find_mounted_volume_by_mount_point(v->mount_point);
-    if (mv) {
-        // volume is already mounted
-        return 1;
-    }
-    return 0;
 }
 
 int try_mount(const char* device, const char* mount_point, const char* fs_type, const char* fs_options) {

@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2007 The Android Open Source Project
  * Copyright (c) 2013, Project Open Cannibal
  *
@@ -40,10 +40,6 @@ int ensure_path_unmounted(const char* path);
 int format_volume(const char* volume);
 
 int get_num_volumes();
-
-// Imported from extendedcommands in CWM
-int volume_main(int argc, char **argv);
-int is_path_mounted(const char* path);
 
 Volume* get_device_volumes();
 

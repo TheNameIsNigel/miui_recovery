@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Format and Storage ;)
+/* Format and Storage handling:
+ * 	Will be used for formatting and storage options akin to CWM/COTR 2.y. */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,6 +32,37 @@
 #include "roots.h"
 
 long tmplog_offset = 0;
+
+int volume_main(int argc, char **argv) {
+    load_volume_table();
+    return 0;
+}
+
+int is_path_mounted(const char* path) {
+    Volume* v = volume_for_path(path);
+    if (v == NULL) {
+        return 0;
+    }
+    if (strcmp(v->fs_type, "ramdisk") == 0) {
+        // the ramdisk is always mounted.
+        return 1;
+    }
+
+    int result;
+    result = scan_mounted_volumes();
+    if (result < 0) {
+        LOGE("failed to scan mounted volumes\n");
+        return 0;
+    }
+
+    const MountedVolume* mv =
+        find_mounted_volume_by_mount_point(v->mount_point);
+    if (mv) {
+        // volume is already mounted
+        return 1;
+    }
+    return 0;
+}
 
 int erase_volume(const char *volume) {
     ui_set_background(BACKGROUND_ICON_INSTALLING);

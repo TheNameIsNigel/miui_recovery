@@ -19,6 +19,9 @@
 
 extern long tmplog_offset;
 
+int volume_main(int argc, char **argv);
+int is_path_mounted(const char* path);
+
 int erase_volume(const char *volume);
 
 int format_device(const char *device, const char *path, const char *fs_type);
