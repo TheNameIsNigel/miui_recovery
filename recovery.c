@@ -618,6 +618,10 @@ print_property(const char *key, const char *name, void *cookie) {
 
 int
 main(int argc, char **argv) {
+    // Recovery needs to install world-readable files, so clear umask
+    // set by init
+    umask(0);
+
 	if (strcmp(basename(argv[0]), "recovery") != 0)
 	{
         if (strstr(argv[0], "minizip") != NULL)
@@ -722,6 +726,7 @@ main(int argc, char **argv) {
         }
     }
 
+    LOGI("device_recovery_start()\n");
     device_recovery_start();
 
     printf("Command:");
@@ -764,7 +769,7 @@ main(int argc, char **argv) {
     } else if (wipe_data) {
         if (device_wipe_data()) status = INSTALL_ERROR;
         if (erase_volume("/data")) status = INSTALL_ERROR;
-        ///if (has_datadata() && erase_volume("/datadata")) status = INSTALL_ERROR;
+        if (has_datadata() && erase_volume("/datadata")) status = INSTALL_ERROR;
         if (wipe_cache && erase_volume("/cache")) status = INSTALL_ERROR;
         if (status != INSTALL_SUCCESS) ui_print("Data wipe failed.\n");
     } else if (wipe_cache) {

@@ -78,11 +78,9 @@ static int parse_options(char* options, Volume* volume) {
             volume->fs_options = strdup(option + 11);
         } else if (strncmp(option, "fs_options2=", 12) == 0) {
             volume->fs_options2 = strdup(option + 12);
-/* Jellybean roots stuff
-        } else if (strncmp(option, "lun=", 4) == 0) {
+        } /*else if (strncmp(option, "lun=", 4) == 0) {
             volume->lun = strdup(option + 4);
-*/
-        } else {
+        }*/ else {
             LOGE("bad option \"%s\"\n", option);
             return -1;
         }
