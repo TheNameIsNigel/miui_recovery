@@ -1,3 +1,18 @@
+/**
+ * Copyright (c) 2013, Project Open Cannibal
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #ifndef NANDROID_H
 #define NANDROID_H
 
@@ -14,10 +29,5 @@ void nandroid_get_assigned_backup_path(const char* backup_path);
  * (they may need to be moved when we import settings) */
 extern const char *DEFAULT_BACKUP_PATH;
 extern const char *USER_DEFINED_BACKUP_MARKER;
-
-/* These really should go somewhere else but are only utilized in nandroid and
- * roots. */
-int format_unknown_device(const char *device, const char* path, const char *fs_type);
-int format_device(const char *device, const char *path, const char *fs_type);
 
 #endif
