@@ -47,7 +47,7 @@ void ui_set_text(char *str);
 
 // Default allocation of progress bar segments to operations
 static const int VERIFICATION_PROGRESS_TIME = 60;
-static const float VERIFICATION_PROGRESS_FRACTION = 0;
+static const float VERIFICATION_PROGRESS_FRACTION = 0.25;
 static const float DEFAULT_FILES_PROGRESS_FRACTION = 0.4;
 static const float DEFAULT_IMAGE_PROGRESS_FRACTION = 0.1;
 
@@ -119,5 +119,12 @@ typedef struct {
 
 // fopen a file, mounting volumes and making parent dirs as necessary.
 FILE* fopen_path(const char *path, const char *mode);
+
+extern int minimum_storage;
+
+#define EMMC 1
+#define EXTERNALSD 2
+
+extern int OTHER_SD_CARD;
 
 #endif  // RECOVERY_COMMON_H

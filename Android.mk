@@ -48,9 +48,6 @@ LOCAL_STATIC_LIBRARIES += libext4_utils_static libz libsparse_static
 
 LOCAL_MODULE_TAGS := eng
 
-#LOCAL_C_INCLUDES += $(LOCAL_PATH)/include
-#LOCAL_LDLIBS += $(LOCAL_PATH)/lib
-
 LOCAL_STATIC_LIBRARIES += libminzip libunz libmincrypt
 
 LOCAL_STATIC_LIBRARIES += libedify libcrecovery libflashutils libmmcutils libbmlutils libmtdutils
