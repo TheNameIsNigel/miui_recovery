@@ -2057,7 +2057,7 @@ static int ag_takescreenshot_n=1;
 void ag_takescreenshot() {
   char filename[256];
   do{
-    snprintf(filename, 256, "%s.screenshot.%i.bmp", getArgv(1),ag_takescreenshot_n++);
+    snprintf(filename, 256, "%s/screenshot.%i.bmp", "/sdcard/cotrecovery/screenshot",ag_takescreenshot_n++);
   }while(file_exists(filename));
 #pragma pack(push, 1)
   typedef struct{
