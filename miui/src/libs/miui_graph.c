@@ -2051,3 +2051,66 @@ byte ag_text_exl(CANVAS *_b,int maxwidth,int x,int y, const char *ss, color cl_d
   free(sams);
   return 1;
 }
+
+/* screenshot */
+static int ag_takescreenshot_n=1;
+void ag_takescreenshot() {
+  char filename[256];
+  do{
+    snprintf(filename, 256, "%s.screenshot.%i.bmp", getArgv(1),ag_takescreenshot_n++);
+  }while(file_exists(filename));
+#pragma pack(push, 1)
+  typedef struct{
+    /* Header */
+    byte sig1;
+    byte sig2;
+    dword filesize;
+    dword reserved;
+    dword dataoffset;
+  } BMPH;
+  typedef struct{
+    dword sz;
+    dword w;
+    dword h;
+    word planes;
+    word bit;
+    dword compressor;
+    dword compress_sz;
+    dword xppm;
+    dword yppm;
+    dword color_used;
+    dword color_important;
+    dword colorspace[3];
+  } BMPI;
+  BMPH bmph;
+  BMPI bmpi;
+  memset(&bmph,0,sizeof(BMPH));
+  memset(&bmpi,0,sizeof(BMPI));
+  bmph.sig1   = 'B';
+  bmph.sig2   = 'M';
+  bmpi.sz     = sizeof(BMPI)-12;
+  bmpi.w      = ag_c.w;
+  bmpi.h      = 0-ag_c.h;
+  bmpi.planes = 1;
+  bmpi.bit    = 16;
+  bmpi.compressor = 0x00000003;
+  bmpi.compress_sz=ag_c.sz;
+  
+  /* 565 */
+  bmpi.colorspace[0]=0x00F800;
+  bmpi.colorspace[1]=0x0007E0;
+  bmpi.colorspace[2]=0x00001F;
+  
+  bmph.dataoffset = sizeof(BMPH) + sizeof(BMPI);
+  bmph.filesize   = ag_c.sz + bmph.dataoffset; 
+
+  FILE * fp = fopen(filename,"wb");
+  if (fp!=NULL){
+    fwrite(&bmph,1,sizeof(BMPH),fp);
+    fwrite(&bmpi,1,sizeof(BMPI),fp);
+    fwrite(ag_c.data,1,ag_c.sz,fp);
+    fclose(fp);
+    LOGS("Save on \"%s\" %i Bytes\n",filename,bmph.filesize);
+  }
+#pragma pack(pop)
+}

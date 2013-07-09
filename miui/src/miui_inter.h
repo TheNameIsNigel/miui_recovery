@@ -151,6 +151,8 @@ typedef struct{
 #define ag_rgbto32(rgb)     (ag_rgba32(ag_r(rgb),ag_g(rgb),ag_b(rgb),0xff))
 #define ag_rgbto16(rgb)     (ag_rgb(ag_r32(rgb),ag_g32(rgb),ag_b32(rgb)))
 
+void ag_takescreenshot();
+byte file_exists(const char * file);
 
 //
 // MIUI Touch Event Code

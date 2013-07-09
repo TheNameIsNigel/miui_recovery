@@ -27,6 +27,11 @@
 #include <sys/stat.h>
 #include "../miui_inter.h"
 
+byte file_exists(const char * file) {
+  struct stat st;
+  return ((stat(file,&st) == 0)?1:0);
+}
+
 //-- TICK TIME
 long alib_tick(){
   struct tms tm;
